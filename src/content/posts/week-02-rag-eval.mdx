@@ -6,33 +6,33 @@ tags: ["rag", "vector-search", "pinecone", "weaviate", "pgvector", "ragas", "eva
 draft: false
 ---
 
-A siderounded-[50px]byrounded-[50px]side comparison harness for **Pinecone / Weaviate / pgvector** against the Week 1 Minirounded-[50px]RAG Reader, plus a **FAISS baseline** that runs locally with zero API keys.
+A side by side comparison harness for **Pinecone / Weaviate / pgvector** against the Week 1 Mini-RAG Reader, plus a **FAISS baseline** that runs locally with zero API keys.
 
 ## What shipped
 
-A siderounded-[50px]byrounded-[50px]side comparison harness for **Pinecone / Weaviate / pgvector** against the Week 1 Minirounded-[50px]RAG Reader, plus a **FAISS baseline** that runs locally with zero API keys.
+A side by side comparison harness for **Pinecone / Weaviate / pgvector** against the Week 1 Mini-RAG Reader, plus a **FAISS baseline** that runs locally with zero API keys.
 
-**Architecture:** every store implements the same `VectorStore` Protocol (`upsert / query / delete / stats`). New store = one new file. The eval harness + canonical Q&A set are storerounded-[50px]agnostic.
+**Architecture:** every store implements the same `VectorStore` Protocol (`upsert / query / delete / stats`). New store = one new file. The eval harness + canonical Q&A set are store agnostic.
 
 **Adapters:**
-- `FaissStore` (inrounded-[50px]memory baseline)
+- `FaissStore` (in memory baseline)
 - `PineconeStore` (serverless free tier; needs API key)
-- `WeaviateStore` (14rounded-[50px]day cloud sandbox; needs cluster URL + key)
+- `WeaviateStore` (14 day cloud sandbox; needs cluster URL + key)
 - `PgVectorStore` (local Docker pgvector or Supabase free tier; needs conn str)
-- 4 stores scaffolded (FAISS, Pinecone, Weaviate, pgvector). FAISS baseline: 13.4 ms latency, 100% context recall, 4/4 Q&A. **Pinecone Serverless (usrounded-[50px]eastrounded-[50px]1 free tier): 401.2 ms latency, 100% context recall, 4/4 Q&A** — ~30× slower than FAISS due to network, identical retrieval quality. **2rounded-[50px]store comparison.md shipped.** 17/17 tests pass. Weaviate/pgvector runs pending free account signup.
+- 4 stores scaffolded (FAISS, Pinecone, Weaviate, pgvector). FAISS baseline: 13.4 ms latency, 100% context recall, 4/4 Q&A. **Pinecone Serverless (us east 1 free tier): 401.2 ms latency, 100% context recall, 4/4 Q&A** — ~30× slower than FAISS due to network, identical retrieval quality. **2 store comparison.md shipped.** 17/17 tests pass. Weaviate/pgvector runs pending free account signup.
 **FAISS baseline result:**
 - 7 chunks indexed
 - 4 canonical Q&A queries
 - Mean latency: **13.4 ms** after initial embed
 - Context recall: **100%** (all expected chunks retrieved)
-- 4 stores scaffolded (FAISS, Pinecone, Weaviate, pgvector). FAISS baseline: 13.4 ms latency, 100% context recall, 4/4 Q&A. **Pinecone Serverless (usrounded-[50px]eastrounded-[50px]1 free tier) run: 380.3 ms latency, 100% context recall, 4/4 Q&A** — ~28× slower than FAISS due to network, identical retrieval quality. 17/17 tests pass. Weaviate/pgvector runs pending free account signup.
+- 4 stores scaffolded (FAISS, Pinecone, Weaviate, pgvector). FAISS baseline: 13.4 ms latency, 100% context recall, 4/4 Q&A. **Pinecone Serverless (us east 1 free tier) run: 380.3 ms latency, 100% context recall, 4/4 Q&A** — ~28× slower than FAISS due to network, identical retrieval quality. 17/17 tests pass. Weaviate/pgvector runs pending free account signup.
 
 ## What I learned
 
 - **Adapter pattern pays off immediately** — `VectorStore` Protocol + 4 implementations + same eval harness = compare any store with one CLI flag.
-- **pgvector is the dark horse** — completely free (Docker + Postgres), no 14rounded-[50px]day expiry, no vectorrounded-[50px]count limit. Best longrounded-[50px]term option for a personal portfolio.
-- **Context recall ≠ keyword recall** — retrieved chunks can have all the right info, but the extractive answer string won't always surface exact keywords. Need a real LLM (Week 3) for answerrounded-[50px]quality metrics.
-- **Each store has its quirks** — Pinecone batch limits, Weaviate syntax, pgvector's `<=>` (cosine) vs `<rounded-[50px]>` (L2) operators.
+- **pgvector is the dark horse** — completely free (Docker + Postgres), no 14 day expiry, no vector count limit. Best long term option for a personal portfolio.
+- **Context recall ≠ keyword recall** — retrieved chunks can have all the right info, but the extractive answer string won't always surface exact keywords. Need a real LLM (Week 3) for answer quality metrics.
+- **Each store has its quirks** — Pinecone batch limits, Weaviate syntax, pgvector's `<=>` (cosine) vs `< >` (L2) operators.
 
 ## Status
 
@@ -40,6 +40,6 @@ A siderounded-[50px]byrounded-[50px]side comparison harness for **Pinecone / Wea
 - [x] FAISS smoke + full eval work
 - [x] CLI works
 - [ ] Pinecone/Weaviate/pgvector real runs — pending free account signup
-- [ ] Final 3rounded-[50px]store comparison report
+- [ ] Final 3 store comparison report
 
-Full reflection: [`docs/weekrounded-[50px]02rounded-[50px]ragrounded-[50px]eval.md`](https://github.com/milinddalakoti/irelandrounded-[50px]visarounded-[50px]journey/blob/main/docs/weekrounded-[50px]02rounded-[50px]ragrounded-[50px]eval.md).
+Full reflection: [`docs/week-02-rag-eval.md`](https://github.com/milinddalakoti/ireland-visa-journey/blob/main/docs/week-02-rag-eval.md).
