@@ -24,7 +24,8 @@ const slotsData = slots.map((s) => ({
     >
       Milind Dalakoti
     </a>
-    <ul class="ml-auto flex flex-wrap items-center gap-x-1 gap-y-2">
+    <!-- Section links — hidden on mobile (MobileDock handles that) -->
+    <ul class="hidden items-center gap-x-1 md:ml-2 md:flex">
       {
         links.map(({ href, label }) => (
           <li>
@@ -38,18 +39,19 @@ const slotsData = slots.map((s) => ({
           </li>
         ))
       }
-      <li class="ml-2">
-        <ThemeToggle />
-      </li>
-      <li class="ml-2">
-        <a
-          href={base + "/#contact"}
-          class="inline-flex items-center gap-2 rounded-full bg-ink-black px-5 py-2.5 text-sm font-medium text-cream-paper hover:bg-fresh-grass"
-        >
-          Get in touch
-        </a>
-      </li>
     </ul>
+    <!-- Theme toggle + contact button — always visible, compact on mobile -->
+    <div class="ml-auto flex items-center gap-2">
+      <span class="ml-2">
+        <ThemeToggle />
+      </span>
+      <a
+        href={base + "/#contact"}
+        class="inline-flex items-center rounded-full bg-ink-black px-3 py-1.5 text-[10px] font-medium text-cream-paper hover:bg-fresh-grass md:px-5 md:py-2.5 md:text-sm"
+      >
+        Get in touch
+      </a>
+    </div>
   </nav>
 </header>
 
