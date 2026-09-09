@@ -103,7 +103,6 @@ const statusLabel = {
 const experience = [
   {
     role: "Software Developer",
-    subtitle: "Production Analyst",
     org: "JP Morgan",
     period: "2023 — 2024",
     location: "Bengaluru, IN",
@@ -111,6 +110,7 @@ const experience = [
       "Led biannual System Resiliency Tests across APAC region.",
       "Produced stakeholder reports + actionable snippets that improved decision-making.",
       "Managed and analyzed SNOW ticket data; extracted incident-management insights.",
+      "Production Analyst — escalated and resolved priority incidents across APAC trading systems.",
     ],
   },
   {
@@ -123,6 +123,7 @@ const experience = [
       "End-to-end management of MQ certificates (generation + renewal).",
       "Cross-trained peers and new joiners on Bullion and Agriculture businesses.",
       "Production support for data pipelines and incident response workflows.",
+      "Production Analyst workflows — tracked and resolved business-impact incidents in Bullion systems.",
     ],
   },
 ];
@@ -306,7 +307,6 @@ const base = import.meta.env.BASE_URL || "";
               <div>
                 <h3 class="hero-name-lg text-ink">{item.org}</h3>
                 <p class="mt-2 text-lg text-ink/90 font-semibold">{item.role}</p>
-                {item.subtitle && <p class="mt-1 text-sm text-ink/70">{item.subtitle}</p>}
                 <ul class="mt-6 max-w-prose-wide space-y-2.5 text-base text-ink/95 font-medium">
                   {item.bullets.map((b) => (
                     <li class="leading-relaxed before:mr-2 before:text-accent before:content-['—']">{b}</li>
@@ -516,7 +516,7 @@ const base = import.meta.env.BASE_URL || "";
               <a
                 href={c.href}
                 rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                class="display-heading text-2xl text-ink no-underline transition-colors hover:text-accent sm:text-3xl md:text-4xl"
+                class="display-heading text-lg text-ink no-underline transition-colors hover:text-accent sm:text-xl md:text-2xl"
               >
                 {c.value}
               </a>
