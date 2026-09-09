@@ -72,7 +72,7 @@ const total = projects.length;
     role="region"
     aria-label="Featured projects, drag horizontally"
   >
-    <div class="pm-track flex items-stretch justify-center gap-6">
+    <div class="pm-track flex items-stretch justify-start gap-6">
       <!-- Project cards -->
       {
         projects.map((p) => (
@@ -126,6 +126,7 @@ const total = projects.length;
       width: 78vw !important;
     }
     .pm-track {
+      padding-left: 1rem;
       padding-right: 1.5rem;
     }
   }

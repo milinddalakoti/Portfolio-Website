@@ -33,15 +33,11 @@ const items = [
 ---
 
 <nav class="mobile-dock md:hidden" aria-label="Section navigation" data-mobile-dock>
-  <ul class="flex items-center gap-1 overflow-x-auto px-2 py-2">
+  <ul class="w-full flex items-center justify-between gap-1 overflow-x-auto px-2 py-2">
     {
       items.map((it) => (
-        <li>
-          <a
-            href={it.href}
-            data-dock-link
-            class="rounded-full border border-divider/70 px-3 py-1.5 font-semibold uppercase tracking-wider text-[10px] text-ink whitespace-nowrap"
-          >
+        <li data-astro-cid-42mxeepz>
+          <a href={it.href} data-dock-link class="rounded-full border border-divider/70 px-2 py-1 font-semibold uppercase tracking-wider text-[9px] text-ink whitespace-nowrap">
             {it.label}
           </a>
         </li>
