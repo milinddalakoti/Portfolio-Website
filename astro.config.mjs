@@ -10,8 +10,8 @@ const srcDir = fileURLToPath(new URL("./src", import.meta.url));
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://milind-dalakoti.github.io/portfolio",
-  base: "/portfolio",
+  site: "https://milind-dalakoti.github.io/Portfolio-Website",
+  base: "/Portfolio-Website",
   output: "static",
   // Hide the Astro dev toolbar (the small badge that injects in the page
   // during `astro dev`). Production builds never include it; this just
