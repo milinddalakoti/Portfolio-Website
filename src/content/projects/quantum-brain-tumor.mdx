@@ -1,0 +1,66 @@
+---
+title: "Brain Tumor Classification with Quantum Image Processing"
+summary: "Investigated whether quantum computing can improve 4-class brain tumor classification. QSVC with ZZFeatureMap quantum kernel achieved 84.31% accuracy at 16×16 — outperforming the classical FFT+SVM baseline (82.35%)."
+date: 2026-07-20
+role: "Solo research project"
+status: "shipped"
+stack:
+  - Python
+  - Qiskit
+  - scikit-learn
+  - PyTorch
+  - Quantum ML
+githubUrl: "https://github.com/milinddalakoti/ireland-visa-journey/tree/main/projects/existing-quantum-brain-tumor"
+metrics:
+  - label: "QSVC accuracy (16×16)"
+    value: "84.31%"
+  - label: "Classical FFT+SVM baseline"
+    value: "82.35%"
+  - label: "Classes"
+    value: "4"
+  - label: "Resolutions tested"
+    value: "4"
+featured: true
+order: 2
+---
+
+## Problem
+
+4 class brain tumor classification (glioma, meningioma, no_tumor, pituitary) is
+a hard medical imaging problem. Classical pipelines (FFT+SVM) plateau around
+82% accuracy. Quantum kernels offer a different hypothesis space — can they
+beat the classical baseline on a practical medical task?
+
+## Approach
+
+1. **Quantum image encodings:** Implemented FRQI (Flexible Representation of
+   Quantum Images) and NEQR (Novel Enhanced Quantum Representation) across
+   four grid resolutions (4×4 → 32×32).
+
+2. **QHED edge detection** + **QFT preprocessing** as quantum feature
+   extractors before classical SVM classification.
+
+3. **QSVC with ZZFeatureMap quantum kernel** as the core classifier. Compared
+   on equal footing against FFT+SVM baseline.
+
+## Result
+
+- **84.31% accuracy at 16×16** with QSVC + ZZFeatureMap.
+- **Outperformed classical FFT+SVM baseline (82.35%)** — demonstrates quantum
+  advantage on a practical medical imaging task at this resolution.
+- Resolution scaling analysis showed quantum advantage diminishes at 32×32
+  (noise floor).
+
+## Why this matters
+
+Honest framing: this is **exploratory research**, not production AI. But the
+ability to read a Qiskit paper, implement FRQI/NEQR from scratch, and report
+where quantum helps vs. doesn't is a differentiator in interviews. Pharma +
+medtech teams value researchers who can evaluate emerging tech without
+overclaiming.
+
+## Honest caveat
+
+Noise on real quantum hardware limited us to simulator results. This is
+"hybrid QML" experience — useful for research teams that also explore
+quantum adjacent work.

@@ -1,0 +1,144 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Reveal from "@/components/Reveal.astro";
+import Watermark from "@/components/Watermark.astro";
+import { getCollection, render, type CollectionEntry } from "astro:content";
+
+export async function getStaticPaths() {
+  const projects = await getCollection("projects");
+  return projects.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<"projects">;
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const base = import.meta.env.BASE_URL || "";
+const { title, summary, date, status, stack, liveUrl, githubUrl, paperUrl, metrics } =
+  entry.data;
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString("en-IE", { year: "numeric", month: "long" });
+
+const statusConfig = {
+  shipped:     { text: "Shipped",     color: "border-hairline-mist bg-cream-paper text-ink-black" },
+  "in-progress": { text: "In progress", color: "border-hairline-mist bg-cream-paper text-ink-black" },
+  research:    { text: "Research",    color: "border-hairline-mist bg-cream-paper text-ink-black" },
+  placeholder: { text: "Placeholder", color: "border-hairline-mist bg-sandstone text-ink-black" },
+};
+const statusLabel = statusConfig[status];
+const projectFolio = `Project · ${entry.id}`;
+---
+
+<Layout title={`${title} — Milind Dalakoti`} description={summary}>
+  <article class="container-page pt-section">
+    <Reveal stagger={5}>
+      <a
+        href={base + "/projects"}
+        class="inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-ink"
+      >
+        <span aria-hidden="true">←</span> All projects
+      </a>
+    </Reveal>
+
+    <header class="mt-10 grid grid-cols-1 gap-10 md:grid-cols-[1fr_auto] md:items-start">
+      <div>
+        <Reveal stagger={1}>
+          <p class="eyebrow inline-flex items-center gap-3">
+            <span>{fmt(date)}</span>
+            <span aria-hidden="true" class="text-divider">/</span>
+            <span class:list={["inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] uppercase tracking-wider", statusLabel.color]}>
+              {statusLabel.text}
+            </span>
+          </p>
+        </Reveal>
+        <Reveal stagger={2}>
+          <h1 class="hero-name mt-6 text-ink">{title}</h1>
+        </Reveal>
+        <Reveal stagger={3} class="mt-8 max-w-prose-wide">
+          <p class="text-body-lg text-ink/95 leading-relaxed font-medium">{summary}</p>
+        </Reveal>
+        <Reveal stagger={4} class="mt-8 flex flex-wrap gap-3">
+          {
+            githubUrl && (
+              <a
+                href={githubUrl}
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 rounded-full border border-hairline-mist px-5 py-2.5 text-sm font-medium text-ink-black transition-colors hover:border-ink-black"
+              >
+                GitHub →
+              </a>
+            )
+          }
+          {
+            liveUrl && (
+              <a
+                href={liveUrl}
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 rounded-full bg-ink-black px-5 py-2.5 text-sm font-medium text-cream-paper transition-colors hover:bg-fresh-grass"
+              >
+                Live demo →
+              </a>
+            )
+          }
+          {
+            paperUrl && (
+              <a
+                href={paperUrl}
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 rounded-full border border-hairline-mist px-5 py-2.5 text-sm font-medium text-ink-black transition-colors hover:border-ink-black"
+              >
+                Paper →
+              </a>
+            )
+          }
+        </Reveal>
+      </div>
+
+      <Reveal stagger={5} class="md:pt-2">
+        <p class="section-folio">{projectFolio}</p>
+      </Reveal>
+    </header>
+
+
+    {
+      metrics && metrics.length > 0 && (
+        <Reveal stagger={1}>
+          <section class="glass-panel mt-section grid grid-cols-2 gap-6 rounded-[50px] p-8 sm:grid-cols-3">
+            {metrics.map((m, i) => (
+              <div>
+                <p class="eyebrow flex items-baseline gap-2">
+                  <span class="text-ink/40 tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+                  {m.label}
+                </p>
+                <p class="display-heading mt-3 text-3xl text-ink sm:text-4xl">{m.value}</p>
+              </div>
+            ))}
+          </section>
+        </Reveal>
+      )
+    }
+
+    <Reveal stagger={1} class="mt-16">
+      <p class="eyebrow">Stack</p>
+      <ul class="mt-4 flex flex-wrap gap-2">
+        {stack.map((s) => <li class="chip">{s}</li>)}
+      </ul>
+    </Reveal>
+
+    <Reveal stagger={2} class="mt-20">
+      <div class="prose-body">
+        <Content />
+      </div>
+    </Reveal>
+
+    <Reveal stagger={1} class="mt-section">
+      <Watermark text={title} />
+    </Reveal>
+  </article>
+</Layout>

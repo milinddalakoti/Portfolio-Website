@@ -1,0 +1,123 @@
+---
+/**
+ * MobileDock.astro
+ *
+ * Compact horizontal section dock pinned to the bottom of the viewport
+ * on small screens. Mirrors the Folio Rail's purpose (always-visible
+ * "you are here" + section jump) but in a form factor that fits a
+ * 360px-wide phone.
+ *
+ * Hidden on md+ since the Folio Rail is there.
+ *
+ * The dock is a `<nav>` of pill links. The active section is highlighted
+ * with a filled pill; the others are outlined. As the user scrolls, the
+ * active pill updates in real time (via a scroll listener that reads the
+ * current scroll position and picks the section under the top fold).
+ *
+ * Design rules (matching the Folio Rail's visual language):
+ *   - Display font, all-caps, letter-spaced labels
+ *   - Glass surface so it reads as a layer over the content
+ *   - Active pill is filled ink; inactive pills are subtle
+ *   - No motion on the pills themselves (only the active state swap)
+ */
+
+const items = [
+  { href: "/#home",       label: "Home"  },
+  { href: "/#now",        label: "Now"   },
+  { href: "/#projects",   label: "Work"  },
+  { href: "/#skills",     label: "Skills"},
+  { href: "/#experience", label: "Time"  },
+  { href: "/#education", label: "Edu."  },
+  { href: "/#contact",    label: "Talk"  },
+];
+---
+
+<nav class="mobile-dock md:hidden" aria-label="Section navigation" data-mobile-dock>
+  <ul class="flex items-center gap-1 overflow-x-auto px-2 py-2">
+    {
+      items.map((it) => (
+        <li>
+          <a
+            href={it.href}
+            data-dock-link
+            class="rounded-full border border-divider/70 px-3 py-1.5 font-semibold uppercase tracking-wider text-[10px] text-ink whitespace-nowrap"
+          >
+            {it.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  .mobile-dock {
+    position: fixed;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    z-index: 35;
+    border-radius: var(--radius-full);
+    background-color: var(--color-pure-white);
+    border: 1px solid var(--color-divider);
+    /* Hide scrollbar */
+    scrollbar-width: none;
+  }
+  .mobile-dock ul::-webkit-scrollbar { display: none; }
+  .mobile-dock [data-dock-link] {
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  }
+  .mobile-dock [data-dock-link].is-active {
+    background-color: var(--color-fresh-grass);
+    color: var(--color-ink);
+    border-color: var(--color-fresh-grass);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-dock [data-dock-link] { transition: none; }
+  }
+</style>
+
+<script is:inline>
+  // Drive the active pill on scroll. We find the section closest to the
+  // top of the viewport (under the sticky nav) and mark its pill active.
+  // Pure rAF — no scroll listener spam.
+  (function () {
+    var dock = document.querySelector("[data-mobile-dock]");
+    if (!dock) return;
+    var links = Array.prototype.slice.call(dock.querySelectorAll("[data-dock-link]"));
+    var hashByHref = {};
+    for (var i = 0; i < links.length; i++) {
+      var h = links[i].getAttribute("href") || "";
+      var m = h.match(/#([^/?#]+)/);
+      if (m) hashByHref[h] = m[1];
+    }
+    var ids = ["home", "now", "projects", "skills", "experience", "education", "contact"];
+
+    function update() {
+      // The first section whose top is below the nav (~96px) wins.
+      // If we're above the first section, default to "home".
+      var fold = 140; // 80px nav + ~60px breathing
+      var activeId = "home";
+      for (var i = 0; i < ids.length; i++) {
+        var el = document.getElementById(ids[i]);
+        if (!el) continue;
+        var top = el.getBoundingClientRect().top;
+        if (top - fold <= 0) activeId = ids[i];
+      }
+      for (var j = 0; j < links.length; j++) {
+        var href = links[j].getAttribute("href") || "";
+        var section = (href.match(/#([^/?#]+)/) || [])[1];
+        if (section === activeId) links[j].classList.add("is-active");
+        else links[j].classList.remove("is-active");
+      }
+    }
+
+    var ticking = false;
+    function onScroll() {
+      if (!ticking) { requestAnimationFrame(function () { update(); ticking = false; }); ticking = true; }
+    }
+    document.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("astro:page-load", update);
+    update();
+  })();
+</script>

@@ -1,0 +1,508 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import ProjectCard from "@/components/ProjectCard.astro";
+import Reveal from "@/components/Reveal.astro";
+import Divider from "@/components/Divider.astro";
+import ProjectMarquee from "@/components/ProjectMarquee.astro";
+import Watermark from "@/components/Watermark.astro";
+import { getCollection } from "astro:content";
+
+// Featured projects for the marquee (top 6 by `order`).
+const projects = (await getCollection("projects"))
+  .filter((p) => p.data.featured)
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 6);
+
+// Now content (2 lists) — was in src/pages/now.astro before it became
+// a redirect to /#now.
+const nowSections = [
+  {
+    title: "Shipped",
+    items: [
+      "✅ Portfolio site on Astro 7.x + Tailwind 4 with editorial treatment",
+      "✅ PPO Reinforcement Learning agent for Cuphead boss combat (22× damage improvement)",
+    ],
+  },
+  {
+    title: "Building next",
+    items: [
+      "🛠 RAGAS eval across Pinecone / Weaviate / pgvector",
+      "📈 FastAPI + Docker serving for the Mini-RAG Reader",
+      "🪪 AWS SAA-C03 + Terraform starter module",
+    ],
+  },
+];
+
+// Skills content — was in src/pages/skills.astro before the redirect.
+const skillGroups = [
+  {
+    title: "Languages",
+    skills: ["Python (primary)", "SQL", "C++", "R"],
+  },
+  {
+    title: "ML / Deep Learning / RL",
+    skills: [
+      "PyTorch",
+      "Stable-Baselines3",
+      "Gymnasium",
+      "scikit-learn",
+      "NumPy",
+      "Pandas",
+      "TensorFlow",
+      "XGBoost",
+    ],
+  },
+  {
+    title: "LLM / RAG / Quantum",
+    skills: ["Hugging Face Transformers", "LangChain", "Qiskit", "PyKEEN", "FAISS"],
+  },
+  {
+    title: "Cloud & DevOps",
+    skills: [
+      "AWS (SageMaker, Lambda, EC2, S3, Step Functions)",
+      "Docker",
+      "GitHub Actions",
+      "Terraform (target)",
+      "Linux/CLI",
+      "ETL pipelines",
+    ],
+  },
+  {
+    title: "Data & Visualization",
+    skills: ["Matplotlib", "seaborn", "Tableau", "Power BI", "MLflow (target)"],
+  },
+  {
+    title: "Databases",
+    skills: ["MySQL", "SPARQL/Wikidata"],
+  },
+];
+
+const certs = [
+  { name: "AWS Cloud Practitioner (older, 2023)", status: "held" },
+  { name: "IBM Cloud Application Developer Explorer Award", status: "held" },
+  { name: "AI & Machine Learning — Data Science Bootcamp (Udemy)", status: "held" },
+  { name: "Machine Learning (Python) — SmartKnower", status: "held" },
+  { name: "Git and GitHub (Coursera)", status: "held" },
+  { name: "Python Data Structures (Coursera)", status: "held" },
+  { name: "Game Design and Development 1: 2D Shooter (Coursera)", status: "held" },
+  { name: "AWS CCP renewal (CLF-C02)", status: "in-progress" },
+  { name: "Azure AI Fundamentals (AI-900)", status: "planned" },
+  { name: "Google Generative AI Fundamentals skill badge", status: "planned" },
+  { name: "Hugging Face LLM Course completion", status: "in-progress" },
+  { name: "IBM Machine Learning Professional Certificate", status: "planned" },
+  { name: "DeepLearning.AI ML Specialization", status: "planned" },
+];
+
+const statusLabel = {
+  held:        { text: "Held",          color: "border-hairline-mist bg-cream-paper text-ink-black" },
+  "in-progress": { text: "In progress", color: "border-hairline-mist bg-cream-paper text-ink-black" },
+  planned:     { text: "Planned",       color: "border-hairline-mist bg-sandstone text-ink-black" },
+};
+
+// Experience content — was in src/pages/experience.astro before the redirect.
+const experience = [
+  {
+    role: "Production Analyst",
+    org: "JP Morgan",
+    period: "2023 — 2024",
+    location: "Bengaluru, IN",
+    bullets: [
+      "Led biannual System Resiliency Tests across APAC region.",
+      "Produced stakeholder reports + actionable snippets that improved decision-making.",
+      "Managed and analyzed SNOW ticket data; extracted incident-management insights.",
+    ],
+  },
+  {
+    role: "Production Analyst",
+    org: "Wiley",
+    period: "2022 — 2023",
+    location: "Bengaluru, IN",
+    bullets: [
+      "Supported the Bullion (Precious Metals) business within Macro Commodities.",
+      "End-to-end management of MQ certificates (generation + renewal).",
+      "Cross-trained peers and new joiners on Bullion and Agriculture businesses.",
+    ],
+  },
+];
+
+// Education content — academic background.
+const education = [
+  {
+    role: "M.Sc. in Computer Science (Artificial Intelligence)",
+    org: "University of Galway",
+    period: "2025 — Present",
+    location: "Galway, IE",
+    bullets: [
+      "Dissertation: PPO Reinforcement Learning Agent for Cuphead Boss Combat (Recurrent PPO MlpLstmPolicy, 10k episodes, 22× damage improvement).",
+      "Coursework: RL, deep learning, graph ML, quantum ML, NLP, knowledge graphs.",
+    ],
+  },
+  {
+    role: "B.Tech in Computer Science (Data Science & AI)",
+    org: "SRM University, Delhi-NCR",
+    period: "2018 — 2022",
+    location: "Delhi-NCR, IN",
+    bullets: [
+      "First Class with Distinction (CGPA 7.76/10).",
+      "Top 10 in Challenge ACI Hackathon (62 teams).",
+    ],
+  },
+];
+
+// Contact channels — were in src/pages/contact.astro before the redirect.
+const channels = [
+  { label: "Email",   value: "milinddalakoti@gmail.com",     href: "mailto:milinddalakoti@gmail.com",     note: "Replies within 24h, weekdays" },
+  { label: "LinkedIn", value: "linkedin.com/in/milind-dalakoti", href: "https://linkedin.com/in/milind-dalakoti", note: "Open to DMs from recruiters" },
+  { label: "GitHub",  value: "github.com/milinddalakoti",    href: "https://github.com/milinddalakoti",    note: "All work, all open source" },
+  { label: "Phone",   value: "+353 89 483 8737",             href: "tel:+353894838737",                   note: "For established conversations only" },
+];
+
+const base = import.meta.env.BASE_URL || "";
+---
+<Layout>
+  <!-- 01 · HOME / HERO -->
+  <section id="home" class="container-page relative pt-section">
+    <Reveal stagger={1} class="inline-flex items-center gap-2 text-sm text-muted mb-10">
+      <span
+        class="inline-block h-2 w-2 rounded-full bg-fresh-grass"
+        aria-hidden="true"
+      ></span>
+      Open to ML / Data / AI roles · Dublin &amp; Galway
+    </Reveal>
+
+    <Reveal stagger={2}>
+      <h1 class="hero-name text-ink">
+        Milind
+        <br />
+        <span class="display-tracked">Dalakoti.</span>
+      </h1>
+    </Reveal>
+
+    <div class="mt-10 grid grid-cols-1 items-start gap-10 md:grid-cols-[1fr_auto]">
+      <Reveal stagger={3} class="max-w-prose-wide">
+        <p class="text-body-lg text-ink/90 leading-relaxed font-medium">
+          Data Science &amp; AI Engineer. M.Sc. Computer Science (Artificial
+          Intelligence) at the <strong class="font-bold text-ink"
+            >University of Galway</strong
+          >. 2 years production support at JP Morgan &amp; Wiley. Building
+          production-grade ML systems — RAG, RL, MLOps.
+        </p>
+      </Reveal>
+
+      <Reveal stagger={4}>
+        <img
+          src={base + "/portrait.jpg"}
+          alt="Milind Dalakoti"
+          class="aspect-square w-48 rounded-full object-cover object-top ring-4 ring-divider sm:w-56"
+          loading="eager"
+          width="220"
+          height="220"
+        />
+      </Reveal>
+    </div>
+
+    <Reveal stagger={5} class="mt-10 flex flex-wrap gap-3">
+      <a
+        href={base + "/#contact"}
+        class="inline-flex items-center gap-2 rounded-full bg-ink-black px-5 py-2.5 text-sm font-medium text-cream-paper transition-colors hover:bg-fresh-grass"
+      >
+        Get in touch
+      </a>
+      <a
+        href="https://github.com/milinddalakoti"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-2 rounded-full border border-hairline-mist px-5 py-2.5 text-sm font-medium text-ink-black transition-colors hover:border-ink-black"
+      >
+        GitHub →
+      </a>
+    </Reveal>
+  </section>
+
+  <Reveal stagger={1}>
+    <Divider class="my-section-tight" />
+  </Reveal>
+
+  <!-- 02 · NOW -->
+  <section id="now" class="container-page section-block-snug relative">
+    <Reveal stagger={1}>
+      <p class="eyebrow">Now</p>
+      <h2 class="hero-name-lg mt-3 text-ink">What I'm working on.</h2>
+    </Reveal>
+
+    <Reveal stagger={2} class="mt-6 max-w-prose-wide text-body-lg text-ink/90">
+      <p>
+        A weekly snapshot of what I'm working on. Borrowed from nownownow.com
+        — keeps me honest about focus. Last updated <time datetime="2026-09-02">2 September 2026</time>.
+      </p>
+    </Reveal>
+
+    <div class="mt-12 grid grid-cols-1 gap-12 md:grid-cols-2">
+      {
+        nowSections.map((s, idx) => (
+          <Reveal stagger={((idx % 6) + 1) as 1 | 2 | 3 | 4 | 5 | 6}>
+            <article>
+              <div class="flex items-baseline gap-3">
+                <span class="display-heading text-2xl text-ink/40 tabular-nums">
+                  {String(idx + 1).padStart(2, "0")}
+                </span>
+                <h3 class="display-heading text-2xl font-bold text-ink">{s.title}</h3>
+              </div>
+              <Divider class="mt-3" />
+              <ul class="mt-4 space-y-2.5 text-base text-ink/95 font-medium">
+                {s.items.map((it) => <li class="leading-relaxed">{it}</li>)}
+              </ul>
+            </article>
+          </Reveal>
+        ))
+      }
+    </div>
+  </section>
+
+  <Reveal stagger={1}>
+    <Divider class="my-section-tight" />
+  </Reveal>
+
+  <!-- 03 · PROJECTS -->
+  <section id="projects" class="container-page section-block-snug relative">
+    <Reveal stagger={1}>
+      <p class="eyebrow">Projects</p>
+      <h2 class="hero-name-lg mt-3 text-ink">Selected work.</h2>
+    </Reveal>
+    <Reveal stagger={2} class="mt-6 max-w-prose-wide text-body-lg text-ink/90">
+      <p>
+        Selected work from my M.Sc. and JP Morgan/Wiley production support —
+        uplifted into reproducible, well-tested artefacts.
+      </p>
+    </Reveal>
+    <Reveal stagger={3} class="mt-12 md:-mx-[calc((100vw-100%)/2)]">
+      <ProjectMarquee projects={projects} />
+    </Reveal>
+  </section>
+
+  <Reveal stagger={1}>
+    <Divider class="my-section-tight" />
+  </Reveal>
+
+  <!-- 04 · SKILLS -->
+  <section id="skills" class="container-page section-block-snug relative">
+    <Reveal stagger={1}>
+      <p class="eyebrow">What I work with</p>
+      <h2 class="hero-name-lg mt-3 text-ink">Skills &amp; certifications.</h2>
+    </Reveal>
+    <Reveal stagger={2} class="mt-6 max-w-prose-wide text-body-lg text-ink/90">
+      <p>
+        Held certifications from JP Morgan, Wiley, and undergraduate study.
+      </p>
+    </Reveal>
+
+    <Reveal stagger={3} class="mt-12">
+      <p class="eyebrow">Stack</p>
+      <h3 class="hero-name-lg mt-3 text-ink">The toolkit.</h3>
+    </Reveal>
+
+    <div class="mt-10 grid grid-cols-1 gap-x-10 gap-y-12 md:grid-cols-2">
+      {
+        skillGroups.map((g, idx) => (
+          <Reveal stagger={((idx % 6) + 1) as 1 | 2 | 3 | 4 | 5 | 6}>
+            <article>
+              <div class="flex items-baseline gap-3">
+                <span class="display-heading text-2xl text-ink/40 tabular-nums">
+                  {String(idx + 1).padStart(2, "0")}
+                </span>
+                <h4 class="display-heading text-2xl text-ink">{g.title}</h4>
+              </div>
+              <ul class="mt-4 flex flex-wrap gap-2">
+                {g.skills.map((s) => <li class="chip">{s}</li>)}
+              </ul>
+            </article>
+          </Reveal>
+        ))
+      }
+    </div>
+
+    <Reveal stagger={1} class="mt-20">
+      <p class="eyebrow">Certifications</p>
+      <h3 class="hero-name-lg mt-3 text-ink">Certifications.</h3>
+    </Reveal>
+    <Reveal stagger={2} class="mt-10">
+      <ul class="divide-y divide-divider border-y border-divider">
+        {
+          certs.filter((c) => c.status === "held").map((c) => (
+            <li class="grid grid-cols-[1fr_auto] items-center gap-4 py-4 md:grid-cols-[1fr_12rem]">
+              <span class="text-base text-ink">{c.name}</span>
+              <span
+                class:list={[
+                  "inline-flex items-center justify-self-end rounded-full border px-3 py-1 text-xs",
+                  statusLabel[c.status as keyof typeof statusLabel].color,
+                ]}
+              >
+                {statusLabel[c.status as keyof typeof statusLabel].text}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </Reveal>
+  </section>
+
+  <Reveal stagger={1}>
+    <Divider class="my-section-tight" />
+  </Reveal>
+
+  <!-- 05 · EXPERIENCE -->
+  <section id="experience" class="container-page section-block-snug relative">
+    <Reveal stagger={1}>
+      <p class="eyebrow">Production support → ML</p>
+      <h2 class="hero-name-lg mt-3 text-ink">Experience.</h2>
+    </Reveal>
+    <Reveal stagger={2} class="mt-6 max-w-prose-wide text-body-lg text-ink/90">
+      <p>
+        Production support at JP Morgan + Wiley (2 yrs), M.Sc. AI at Galway,
+        research-led. The thread: turning incident data into decisions.
+      </p>
+    </Reveal>
+
+    <Reveal stagger={3} class="mt-12">
+      <p class="eyebrow">Timeline · most recent first</p>
+    </Reveal>
+
+    <ol class="mt-12 space-y-16">
+      {
+        experience.map((item, idx) => (
+          <Reveal as="li" stagger={((idx % 6) + 1) as 1 | 2 | 3 | 4 | 5 | 6} class="relative grid grid-cols-1 gap-6 border-l-2 border-divider pl-8 md:grid-cols-[10rem_1fr] md:gap-12">
+              <span
+                aria-hidden="true"
+                class="absolute -left-[7px] top-1.5 inline-block h-3 w-3 rounded-full bg-accent"
+              />
+              <div>
+                <p class="display-heading text-xl text-ink">{item.period}</p>
+                <p class="mt-1 text-sm text-ink/70">{item.location}</p>
+                <p class="mt-4 eyebrow text-ink">No. {String(experience.length - idx).padStart(2, "0")}</p>
+              </div>
+              <div>
+                <h3 class="hero-name-lg text-ink">{item.role}</h3>
+                <p class="mt-2 text-lg text-ink/90 font-semibold">{item.org}</p>
+                <ul class="mt-6 max-w-prose-wide space-y-2.5 text-base text-ink/95 font-medium">
+                  {item.bullets.map((b) => (
+                    <li class="leading-relaxed before:mr-2 before:text-accent before:content-['—']">{b}</li>
+                  ))}
+                </ul>
+              </div>
+          </Reveal>
+        ))
+      }
+    </ol>
+
+    <Reveal stagger={1} class="mt-20 max-w-prose-wide">
+      <p class="text-base text-ink/90 leading-relaxed font-medium">
+        References available on request. See
+        <a
+          href="https://linkedin.com/in/milind-dalakoti"
+          rel="noopener noreferrer"
+          class="link-accent">LinkedIn</a
+        > for endorsements.
+      </p>
+    </Reveal>
+  </section>
+
+  <Reveal stagger={1}>
+    <Divider class="my-section-tight" />
+  </Reveal>
+
+  <!-- 06 · EDUCATION -->
+  <section id="education" class="container-page section-block-snug relative">
+    <Reveal stagger={1}>
+      <p class="eyebrow">Academic background</p>
+      <h2 class="hero-name-lg mt-3 text-ink">Education.</h2>
+    </Reveal>
+    <Reveal stagger={2} class="mt-6 max-w-prose-wide text-body-lg text-ink/90">
+      <p>
+        Formal training in computer science and AI — the foundation behind the
+        production work.
+      </p>
+    </Reveal>
+
+    <Reveal stagger={3} class="mt-12">
+      <p class="eyebrow">Timeline · most recent first</p>
+    </Reveal>
+
+    <ol class="mt-12 space-y-16">
+      {
+        education.map((item, idx) => (
+          <Reveal as="li" stagger={((idx % 6) + 1) as 1 | 2 | 3 | 4 | 5 | 6} class="relative grid grid-cols-1 gap-6 border-l-2 border-divider pl-8 md:grid-cols-[10rem_1fr] md:gap-12">
+              <span
+                aria-hidden="true"
+                class="absolute -left-[7px] top-1.5 inline-block h-3 w-3 rounded-full bg-accent"
+              />
+              <div>
+                <p class="display-heading text-xl text-ink">{item.period}</p>
+                <p class="mt-1 text-sm text-ink/70">{item.location}</p>
+                <p class="mt-4 eyebrow text-ink">No. {String(education.length - idx).padStart(2, "0")}</p>
+              </div>
+              <div>
+                <h3 class="hero-name-lg text-ink">{item.role}</h3>
+                <p class="mt-2 text-lg text-ink/90 font-semibold">{item.org}</p>
+                <ul class="mt-6 max-w-prose-wide space-y-2.5 text-base text-ink/95 font-medium">
+                  {item.bullets.map((b) => (
+                    <li class="leading-relaxed before:mr-2 before:text-accent before:content-['—']">{b}</li>
+                  ))}
+                </ul>
+              </div>
+          </Reveal>
+        ))
+      }
+    </ol>
+
+    <Reveal stagger={1} class="mt-20 max-w-prose-wide">
+      <p class="text-base text-ink/90 leading-relaxed font-medium">
+        Dissertation and coursework available on request. See
+        <a
+          href="https://linkedin.com/in/milind-dalakoti"
+          rel="noopener noreferrer"
+          class="link-accent">LinkedIn</a
+        > for endorsements.
+      </p>
+    </Reveal>
+  </section>
+
+  <Reveal stagger={1}>
+    <Divider class="my-section-tight" />
+  </Reveal>
+
+  <!-- 07 · CONTACT -->
+  <section id="contact" class="container-page section-block relative">
+    <Reveal stagger={1}>
+      <p class="eyebrow">Reach out</p>
+      <h2 class="hero-name-lg mt-3 text-ink">Let's connect.</h2>
+    </Reveal>
+    <Reveal stagger={2} class="mt-6 max-w-prose-wide text-body-lg text-ink/90">
+      <p>
+        Looking for ML / Data / AI roles in Dublin and Galway. Available for
+        full-time, contract, or research-collaboration conversations.
+      </p>
+    </Reveal>
+
+    <ul class="mt-12 space-y-4">
+      {
+        channels.map((c, i) => (
+          <Reveal as="li" stagger={((i % 6) + 1) as 1 | 2 | 3 | 4 | 5 | 6} class="glass-panel grid grid-cols-1 gap-4 rounded-[50px] p-6 md:grid-cols-[12rem_1fr_auto] md:items-center md:gap-10">
+              <p class="eyebrow">{c.label}</p>
+              <a
+                href={c.href}
+                rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                class="display-heading text-2xl text-ink no-underline transition-colors hover:text-accent sm:text-3xl md:text-4xl"
+              >
+                {c.value}
+              </a>
+              <p class="text-sm text-ink/70 md:text-right">{c.note}</p>
+          </Reveal>
+        ))
+      }
+    </ul>
+  </section>
+
+
+  <Reveal stagger={1}>
+    <Watermark text="Milind Dalakoti" class="mt-section" />
+  </Reveal>
+</Layout>

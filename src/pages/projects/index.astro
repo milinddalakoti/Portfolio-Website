@@ -1,0 +1,8 @@
+---
+// All section content lives on `/` now. This route exists so that
+// deep links (e.g. /projects shared in an email) resolve to the
+// right section on the single-page home. Individual case studies
+// at /projects/<slug> remain as their own pages.
+const base = import.meta.env.BASE_URL || "";
+return Astro.redirect(base + "/#projects");
+---

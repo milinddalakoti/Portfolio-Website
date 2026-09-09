@@ -1,0 +1,59 @@
+---
+title: "From-First-Principles Neural Network for EMNIST Classification"
+summary: "Built a neural network from scratch (no PyTorch/TensorFlow) implementing softmax regression, logistic regression, shallow nets, and deep multi-layer architectures. Classified 85,800 handwritten letters from EMNIST."
+date: 2026-03-10
+role: "Solo deep-learning fundamentals project"
+status: "shipped"
+stack:
+  - Python
+  - NumPy
+  - Jupyter
+  - scikit-learn
+githubUrl: "https://github.com/milinddalakoti/ireland-visa-journey/tree/main/projects/existing-emnist-nn"
+metrics:
+  - label: "Samples"
+    value: "85,800"
+  - label: "Architectures"
+    value: "4"
+  - label: "Frameworks used"
+    value: "0 (from scratch)"
+featured: true
+order: 3
+---
+
+## Problem
+
+Most ML engineers treat PyTorch as a black box. I wanted to prove I understand
+forward pass, backprop, gradient descent, and overfitting mechanics at the
+matrix level — no autograd.
+
+## Approach
+
+1. **From scratch NumPy implementation:** Softmax regression, logistic
+   regression, shallow (1 hidden layer) networks, and deep (3+ hidden layer)
+   architectures — all using NumPy only.
+
+2. **EMNIST letters dataset:** 85,800 samples across 26 letter classes (balanced
+   subset). Standard 70/15/15 train/val/test split.
+
+3. **Overfitting analysis:** Compared shallow vs deep architectures on
+   train vs validation curves. Documented exactly when each architecture starts
+   to overfit and which regularisation (L2, dropout, early stopping) worked
+   best.
+
+## Result
+
+- **All 4 architectures implemented in NumPy** — proves I can hand derive
+  gradients.
+- **Confusion matrix error analysis** as a separate artefact.
+- **Reproducibility:** `requirements.lock.txt` pins NumPy version; Dockerfile
+  runs the entire pipeline in 4 commands.
+
+## Why this matters
+
+Hiring managers consistently say "show me fundamentals" before "show me
+frameworks". This project is a strong interview talking point and signals
+that the candidate will not panic when PyTorch misbehaves in production.
+
+Especially relevant for ML platform teams where deep bugs often hide at
+the framework boundary.

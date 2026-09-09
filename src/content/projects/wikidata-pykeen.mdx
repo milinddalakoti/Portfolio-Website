@@ -1,0 +1,56 @@
+---
+title: "Wikidata Link Prediction with Graph Embeddings"
+summary: "Extracted 10k+ triples from Wikidata using SPARQL, built a background graph, and applied PyKEEN graph embeddings to predict missing links. Compared PyKEEN embedding methods against a PyTorch Geometric GNN."
+date: 2026-06-05
+role: "Solo research project"
+status: "shipped"
+stack:
+  - Python
+  - SPARQL
+  - PyKEEN
+  - PyTorch Geometric
+  - Jupyter
+githubUrl: "https://github.com/milinddalakoti/ireland-visa-journey/tree/main/projects/existing-wikidata-pykeen"
+metrics:
+  - label: "Triples extracted"
+    value: "10k+"
+  - label: "PyKEEN methods tested"
+    value: "5+"
+  - label: "vs. PyTorch Geometric GNN"
+    value: "true"
+featured: true
+order: 4
+---
+
+## Problem
+
+Knowledge graphs are everywhere — Wikidata, internal company graphs, fraud
+detection networks. Given a partially observed graph, can we predict the
+missing links?
+
+## Approach
+
+1. **SPARQL extraction:** Pulled 10k+ triples from Wikidata using SPARQL
+   queries. Built a background graph from the extracted subgraph.
+
+2. **PyKEEN graph embeddings:** Trained TransE, ComplEx, DistMult, and other
+   PyKEEN methods on the link prediction task. Evaluated using MRR, Hits@K,
+   and AUC.
+
+3. **PyTorch Geometric GNN comparison:** Built a GraphSAGE-based link
+   prediction model and benchmarked against PyKEEN methods.
+
+## Result
+
+- **Reproducible link prediction pipeline** with config-driven training.
+- **MRR + Hits@K metrics** across all methods in `reports/`.
+- **Streamlit explorer** for inspecting predicted links.
+- **Comparison blog post** (in `/writing`) — *"Learning knowledge graph
+  embeddings with PyKEEN"*.
+
+## Why this matters
+
+Graph/network methods are increasingly relevant to data heavy and
+cybersecurity teams (fraud detection, recommendations, entity resolution).
+This project is also a strong fit for any team doing recommendation or
+entity resolution work.

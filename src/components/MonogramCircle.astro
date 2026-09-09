@@ -1,0 +1,105 @@
+---
+/**
+ * MonogramCircle.astro
+ *
+ * Circular monogram accent: outer dashed ring slowly rotates,
+ * inner ring stays static, initials sit in Instrument Serif at
+ * the visual center. The two dashed arcs (one clockwise, one
+ * counter-clockwise) are SVG <circle> elements with stroke-dasharray
+ * gaps that read as tick marks rather than a continuous line.
+ *
+ * The rotation is purely decorative — gated behind
+ * `prefers-reduced-motion: reduce`.
+ */
+export interface Props {
+  initials?: string;
+  size?: number;
+  class?: string;
+  /** When false, the dashed ring does not spin. Default true. */
+  spin?: boolean;
+}
+
+const {
+  initials = "MD",
+  size = 220,
+  class: cls = "",
+  spin = true,
+} = Astro.props;
+const stroke = 1;
+const r = 100 - stroke; // SVG viewBox is 0..200, leave 1px stroke margin
+---
+
+<div
+  class:list={["monogram-circle relative inline-block", cls]}
+  style={`width:${size}px;height:${size}px;`}
+  aria-hidden="true"
+>
+  <svg
+    viewBox="0 0 200 200"
+    class="absolute inset-0 h-full w-full"
+    fill="none"
+    stroke="currentColor"
+  >
+    <!-- Static outer hairline ring -->
+    <circle
+      cx="100"
+      cy="100"
+      r={r - 8}
+      stroke-width="0.5"
+      class="text-ink/25"
+    />
+    <!-- Spinning dashed ring (clockwise) -->
+    <g class:list={[spin && "anim-spin-slow"]}>
+      <circle
+        cx="100"
+        cy="100"
+        r={r}
+        stroke-width={stroke}
+        stroke-dasharray="3 9"
+        stroke-linecap="round"
+        class="text-ink"
+      />
+    </g>
+    <!-- Counter-spinning inner dashed arc (shorter) -->
+    <g class:list={[spin && "anim-spin-reverse"]}>
+      <circle
+        cx="100"
+        cy="100"
+        r={r - 14}
+        stroke-width="0.75"
+        stroke-dasharray="1 6"
+        stroke-linecap="round"
+        class="text-accent"
+        transform="rotate(45 100 100)"
+      />
+    </g>
+  </svg>
+  <span
+    class="display-heading absolute inset-0 flex items-center justify-center text-[2.4rem] leading-none text-ink"
+    style="letter-spacing:-0.04em; font-weight:800;"
+  >
+    {initials}
+  </span>
+</div>
+
+<style>
+  .anim-spin-slow {
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: mc-spin 32s linear infinite;
+  }
+  .anim-spin-reverse {
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: mc-spin 48s linear infinite reverse;
+  }
+  @keyframes mc-spin {
+    to { transform: rotate(360deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .anim-spin-slow,
+    .anim-spin-reverse {
+      animation: none;
+    }
+  }
+</style>

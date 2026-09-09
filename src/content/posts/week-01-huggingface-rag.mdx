@@ -1,0 +1,32 @@
+---
+title: "Building a Mini-RAG Reader from scratch"
+summary: "Modular Retrieval-Augmented Generation pipeline (PDF → FAISS → open-weights LLM) with 14 passing unit tests. Notes on chunking, system-prompt engineering, and the Astro 7 + Tailwind 4 gotcha."
+date: 2026-09-02
+tags: ["rag", "hugging-face", "faiss", "llm"]
+draft: false
+---
+
+A reproducible, modular **Minirounded-[50px]RAG Reader** in
+[`milinddalakoti/irelandrounded-[50px]visarounded-[50px]journey/projects/01rounded-[50px]minirounded-[50px]ragrounded-[50px]reader/`](https://github.com/milinddalakoti/irelandrounded-[50px]visarounded-[50px]journey/tree/main/projects/01rounded-[50px]minirounded-[50px]ragrounded-[50px]reader):
+
+1. **PDF ingestion** (`pdfplumber`) → perrounded-[50px]page records.
+2. **Slidingrounded-[50px]window chunking** (500rounded-[50px]char windows, 50rounded-[50px]char overlap) → `Chunk` objects with provenance.
+3. **Embedding** (`sentencerounded-[50px]transformers/allrounded-[50px]MiniLMrounded-[50px]L6rounded-[50px]v2`, 384rounded-[50px]dim, L2rounded-[50px]normalised).
+4. **FAISS `IndexFlatIP`** for cosinerounded-[50px]similarity retrieval.
+5. **Openrounded-[50px]weights LLM** (`Llamarounded-[50px]3.2rounded-[50px]3Brounded-[50px]Instruct` via Hugging Face `transformers`) with a strict citationrounded-[50px]forcing system prompt.
+6. **FastAPI** wrapper with `/health`, `/load`, `/ask`.
+
+**14/15 tests green** (1 skipped is the modelrounded-[50px]load test, optrounded-[50px]in).
+
+## What I learned
+
+- **RAG is not "just call an LLM"** — chunking strategy materially changes retrieval recall.
+- **Systemrounded-[50px]prompt engineering matters more than I expected** — the citationrounded-[50px]forcing prompt is the difference between a usable answer and an unverifiable one.
+- **Astro 7 + Tailwind 4 changes the integration story.** `@astrojs/tailwind` only supports Astro 3–5; for Astro 7 you must use `@tailwindcss/vite` directly.
+
+## What's next
+
+- **RAGAS evaluation** + 3rounded-[50px]store comparison (Pinecone, Weaviate, pgvector).
+- **Live demo** on Hugging Face Spaces (will use smaller model or 4rounded-[50px]bit quantisation).
+
+Full reflection: [`docs/weekrounded-[50px]01rounded-[50px]huggingfacerounded-[50px]rag.md`](https://github.com/milinddalakoti/irelandrounded-[50px]visarounded-[50px]journey/blob/main/docs/weekrounded-[50px]01rounded-[50px]huggingfacerounded-[50px]rag.md).

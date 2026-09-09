@@ -1,0 +1,72 @@
+---
+/**
+ * Reveal.astro
+ *
+ * IntersectionObserver-driven fade-and-slide-up. Pure CSS, no GSAP.
+ *
+ * The `as` prop picks the wrapper tag. The default is `<div>` for top-level
+ * block content. For list items, pass `as="li"` so the markup stays
+ * semantically valid (a `<div>` inside an `<ol>`/`<ul>` would be re-parented
+ * by the browser and break list semantics for screen readers).
+ *
+ * Examples:
+ *   <Reveal>...</Reveal>                        // wraps in <div class="reveal">
+ *   <Reveal as="li">...</Reveal>                // wraps in <li class="reveal">
+ *   <Reveal inline>...</Reveal>                 // no wrapper, classes on a Fragment
+ */
+export interface Props {
+  /** Wrapper tag. Default "div". Use "li" inside lists. */
+  as?: "div" | "li" | "section" | "article" | "span";
+  /** Optional stagger index (1..6) for cascading reveal. */
+  stagger?: 1 | 2 | 3 | 4 | 5 | 6;
+  /** Optional extra class names applied to the wrapper. */
+  class?: string;
+  /** When true, render without a wrapper (attributes only via Fragment). */
+  inline?: boolean;
+}
+
+const {
+  as: Tag = "div",
+  stagger,
+  class: cls = "",
+  inline = false,
+} = Astro.props;
+---
+
+{inline ? (
+  <Fragment class:list={["reveal", cls]} data-stagger={stagger} data-reveal="true" />
+) : (
+  <Tag
+    class:list={["reveal", cls]}
+    data-stagger={stagger}
+    data-reveal="true"
+  >
+    <slot />
+  </Tag>
+)}
+
+<script>
+  // IntersectionObserver-based reveal: lightweight, no GSAP.
+  // Toggles `is-visible` on every .reveal that intersects the viewport.
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          io.unobserve(entry.target);
+        }
+      }
+    },
+    { threshold: 0.08, rootMargin: "0px 0px -10% 0px" },
+  );
+
+  const wire = () => {
+    document.querySelectorAll(".reveal").forEach((el) => {
+      if (!el.classList.contains("is-visible")) io.observe(el);
+    });
+  };
+
+  // Astro view-transitions reuses the DOM on navigation; re-wire on each.
+  document.addEventListener("DOMContentLoaded", wire);
+  document.addEventListener("astro:page-load", wire);
+</script>

@@ -1,0 +1,187 @@
+---
+import "@/styles/global.css";
+import { ClientRouter } from "astro:transitions";
+import Nav from "@/components/Nav.astro";
+import Footer from "@/components/Footer.astro";
+import Cursor from "@/components/Cursor.astro";
+import FolioRail from "@/components/FolioRail.astro";
+import MobileDock from "@/components/MobileDock.astro";
+
+export interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const { title, description, ogImage } = Astro.props;
+const siteUrl = "https://milind-dalakoti.github.io/portfolio";
+const url = siteUrl + "/";
+const pageTitle = title ?? "Milind Dalakoti — Data Science & AI Engineer";
+const pageDescription = description ?? "M.Sc. CS (AI) at University of Galway. Production support at JP Morgan & Wiley. Data Science & AI Engineer building production-grade ML systems.";
+const pageOgImage = ogImage ?? "/og-default.png";
+const canonicalUrl = url;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#FAFAF7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0E0E0E" media="(prefers-color-scheme: dark)" />
+  <!-- Pre-paint theme init: resolves the user's stored preference (light,
+       dark, or "system" which follows OS) before first paint so the page
+       never flashes the wrong theme.
+
+       The @theme defaults in global.css are LIGHT (MindMarket cream canvas),
+       so a page that arrives before this script runs is already light.
+       We set data-theme="dark" here only to opt into the inverted dark
+       palette. Default (no stored preference) is "light". -->
+  <script is:inline>
+    (function () {
+      try {
+        var KEY = "milind-theme";
+        var stored = localStorage.getItem(KEY);
+        var mode = stored === "light" || stored === "dark" || stored === "system" ? stored : "light";
+        applyMode(mode);
+      } catch (_) {}
+      function applyMode(mode) {
+        // LIGHT is the @theme default. DARK requires an explicit data-theme.
+        var html = document.documentElement;
+        if (mode === "system") {
+          var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          if (prefersDark) html.setAttribute("data-theme", "dark");
+          else html.setAttribute("data-theme", "light");
+        } else if (mode === "dark") {
+          html.setAttribute("data-theme", "dark");
+        } else {
+          // light
+          html.setAttribute("data-theme", "light");
+        }
+      }
+      window.__applyThemeMode = applyMode;
+    })();
+</script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonicalUrl} />
+    <ClientRouter />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content={pageOgImage} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+  </head>
+  <body class="min-h-screen bg-cream">
+    <FolioRail />
+    <Nav />
+    <MobileDock />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <Cursor />
+    <!-- Measure the floating nav height and expose it as --nav-height so
+         scroll-margin-top (on section[id]) tracks the real nav height
+         instead of a hard-coded value that's too small on mobile where
+         the nav wraps to multiple lines. -->
+    <script is:inline>
+      (function () {
+        function updateNavHeight() {
+          var nav = document.querySelector("header[data-nav]");
+          if (!nav) nav = document.querySelector("header");
+          if (nav) {
+            document.documentElement.style.setProperty(
+              "--nav-height", nav.offsetHeight + "px"
+            );
+          }
+        }
+        updateNavHeight();
+        if (window.__navHeightSynced) return;
+        window.__navHeightSynced = true;
+        window.addEventListener("resize", updateNavHeight);
+        document.addEventListener("astro:page-load", updateNavHeight);
+      })();
+    </script>
+    <style is:inline>
+      @media (min-width: 768px) {
+        /* Account for the fixed FolioRail so main content never overlaps it. */
+        #main { padding-left: 220px; }
+        /* FolioRail auto-hides when near the top — CSS transition. */
+        [data-folio-rail] {
+          transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        [data-folio-rail][data-hidden] {
+          opacity: 0;
+          pointer-events: none;
+          transform: translateY(-50%) translateY(-8px);
+        }
+      }
+    </style>
+    <script is:inline>
+      /* Shared scroll-based section detection.
+         Uses IntersectionObserver to track which section[id] is in view
+         and updates both the Nav and FolioRail active states by syncing
+         the URL hash (which triggers their existing hashchange handlers).
+         Also manages FolioRail visibility: hidden when near the top
+         (where the top Nav is fully visible), shown when scrolled down. */
+      (function () {
+        if (window.__scrollSectionSync) return;
+        var sections = [];
+        function collectSections() {
+          sections = [];
+          var elts = document.querySelectorAll("section[id]:not(.hidden)");
+          for (var i = 0; i < elts.length; i++) {
+            sections.push({ el: elts[i], id: elts[i].getAttribute("id") });
+          }
+        }
+        function updateHash() {
+          if (sections.length === 0) return;
+          var viewportHeight = window.innerHeight;
+          var best = null;
+          var bestScore = Infinity;
+          for (var i = 0; i < sections.length; i++) {
+            var rect = sections[i].el.getBoundingClientRect();
+            var mid = rect.top + rect.height / 2;
+            var score = Math.abs(viewportHeight / 2 - mid);
+            if (score < bestScore) { bestScore = score; best = sections[i].id; }
+          }
+          if (best && bestScore < viewportHeight) {
+            var hash = "#" + best;
+            if (window.location.hash !== hash) {
+              history.replaceState(null, "", hash);
+              window.dispatchEvent(new Event("hashchange"));
+            }
+          }
+          var rail = document.querySelector("[data-folio-rail]");
+          if (rail) {
+            var scrolled = window.pageYOffset || document.documentElement.scrollTop || 0;
+            if (scrolled < 300) {
+              rail.setAttribute("data-hidden", "");
+            } else {
+              rail.removeAttribute("data-hidden");
+            }
+          }
+        }
+        collectSections();
+        window.addEventListener("scroll", updateHash, { passive: true });
+        window.addEventListener("resize", updateHash);
+        document.addEventListener("astro:page-load", function () {
+          collectSections();
+          updateHash();
+        });
+        updateHash();
+        window.__scrollSectionSync = true;
+      })();
+    </script>
+  </body>
+</html>

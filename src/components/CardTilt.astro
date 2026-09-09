@@ -1,0 +1,64 @@
+---
+/**
+ * CardTilt.astro
+ *
+ * Wraps content in a 3D-perspective-tilt container that follows the cursor.
+ * Pure CSS transform via :hover + pointer events delegated to a single
+ * document-level listener for performance (no per-card JS).
+ * Respects prefers-reduced-motion.
+ */
+export interface Props {
+  /** Maximum rotation in degrees (default 6). */
+  max?: number;
+  /** Optional scale on hover (default 1.015). */
+  scale?: number;
+  class?: string;
+}
+const { max = 6, scale = 1.015, class: cls = "" } = Astro.props;
+---
+
+<div
+  class:list={["card-tilt relative", cls]}
+  style={`--tilt-max:${max}deg;--tilt-scale:${scale}`}
+>
+  <slot />
+</div>
+
+<style>
+  .card-tilt {
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+    will-change: transform;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card-tilt { transition: none; }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    if (typeof window === "undefined") return;
+    var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return;
+    var fine = matchMedia("(pointer: fine)").matches;
+    if (!fine) return;
+    var cards = document.querySelectorAll(".card-tilt");
+    function onMove(e) {
+      var t = e.currentTarget;
+      var r = t.getBoundingClientRect();
+      var x = (e.clientX - r.left) / r.width - 0.5;   // -0.5..0.5
+      var y = (e.clientY - r.top) / r.height - 0.5;
+      var max = parseFloat(getComputedStyle(t).getPropertyValue("--tilt-max")) || 6;
+      var s = parseFloat(getComputedStyle(t).getPropertyValue("--tilt-scale")) || 1.015;
+      t.style.transform =
+        "perspective(900px) rotateX(" + (-y * max) + "deg) rotateY(" + (x * max) + "deg) scale(" + s + ")";
+    }
+    function onLeave(e) {
+      e.currentTarget.style.transform = "";
+    }
+    for (var i = 0; i < cards.length; i++) {
+      cards[i].addEventListener("pointermove", onMove);
+      cards[i].addEventListener("pointerleave", onLeave);
+    }
+  })();
+</script>

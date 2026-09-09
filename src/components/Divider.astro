@@ -1,0 +1,56 @@
+---
+/**
+ * Divider.astro
+ *
+ * Decorative inline SVG divider. A thin horizontal line with a centered
+ * dot accent. Animates the line draw on intersection (no JS — pure CSS).
+ * aria-hidden.
+ */
+export interface Props {
+  class?: string;
+  /** "thin" (1px) or "thick" (2px) */
+  weight?: "thin" | "thick";
+}
+const { class: cls = "", weight = "thin" } = Astro.props;
+const stroke = weight === "thick" ? 2 : 1;
+---
+
+<div
+  aria-hidden="true"
+  class:list={["flex w-full items-center justify-center", cls]}
+>
+  <svg
+    viewBox="0 0 240 12"
+    width="100%"
+    height="12"
+    preserveAspectRatio="xMidYMid meet"
+    fill="none"
+    stroke="currentColor"
+    stroke-width={stroke}
+    stroke-linecap="round"
+    class="max-w-[240px] text-divider"
+  >
+    <line x1="0" y1="6" x2="100" y2="6" class="divider-line" />
+    <circle cx="120" cy="6" r="2.5" fill="currentColor" stroke="none" class="text-accent" />
+    <line x1="140" y1="6" x2="240" y2="6" class="divider-line" />
+  </svg>
+</div>
+
+<style>
+  .divider-line {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    transition: stroke-dashoffset 1.2s ease-out;
+  }
+  /* Trigger draw-in when in viewport */
+  :global(.is-visible) .divider-line {
+    stroke-dashoffset: 0;
+  }
+  /* Fallback for no-JS / no-Reveal: just show the line */
+  @media (prefers-reduced-motion: reduce) {
+    .divider-line {
+      stroke-dashoffset: 0;
+      transition: none;
+    }
+  }
+</style>

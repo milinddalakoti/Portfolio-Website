@@ -1,0 +1,28 @@
+---
+/**
+ * Watermark.astro
+ *
+ * Oversized editorial name watermark used as a quiet background
+ * mark above the footer. Set in Instrument Serif at clamp(6rem, 14vw, 12rem),
+ * very low opacity, sits behind the footer content via z-index/positioning.
+ *
+ * The text is purely decorative; aria-hidden.
+ */
+export interface Props {
+  text?: string;
+  class?: string;
+}
+const { text = "Milind Dalakoti", class: cls = "" } = Astro.props;
+---
+
+<div
+  class:list={["watermark pointer-events-none relative -mb-12 overflow-hidden", cls]}
+  aria-hidden="true"
+>
+  <p
+    class="display-heading select-none whitespace-nowrap text-center text-[clamp(6rem,14vw,12rem)] leading-[0.85] text-ink/[0.06]"
+    style="letter-spacing:-0.05em; font-weight:800;"
+  >
+    {text}
+  </p>
+</div>

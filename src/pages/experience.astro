@@ -1,0 +1,7 @@
+---
+// All section content lives on `/` now. This route exists so that
+// deep links (e.g. /experience shared in an email) resolve to the
+// right section on the single-page home.
+const base = import.meta.env.BASE_URL || "";
+return Astro.redirect(base + "/#experience");
+---

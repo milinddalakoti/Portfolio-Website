@@ -1,0 +1,68 @@
+---
+/**
+ * ScrollProgress.astro
+ *
+ * Thin bar at the very top of the viewport showing scroll position.
+ * Fixed positioning, z-index above the canvas but below the nav.
+ * aria-hidden (decorative). No JS at the layout level; uses
+ * CSS animation-timeline: scroll() where supported, with a small
+ * inline-script fallback for browsers without it (Chrome 115+ has
+ * it; older Safari / Firefox falls back to a rAF scroll listener).
+ */
+---
+
+<div
+  id="scroll-progress"
+  aria-hidden="true"
+  class="fixed left-0 right-0 top-0 z-40 h-[2px] origin-left bg-accent/80"
+  style="transform: scaleX(0); will-change: transform;"
+></div>
+
+<style>
+  /* Modern path: CSS Scroll-Linked Animations. Supported Chrome 115+. */
+  @supports (animation-timeline: scroll()) {
+    #scroll-progress {
+      animation: scroll-progress linear;
+      animation-timeline: scroll(root);
+      transform-origin: 0 0;
+    }
+    @keyframes scroll-progress {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(1); }
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #scroll-progress { display: none; }
+  }
+</style>
+
+<script is:inline>
+  // Fallback for browsers without animation-timeline: scroll()
+  (function () {
+    var el = document.getElementById("scroll-progress");
+    if (!el) return;
+    var supports = CSS && CSS.supports && CSS.supports("animation-timeline: scroll()");
+    if (supports) return; // CSS handles it
+
+    var ticking = false;
+    function update() {
+      var doc = document.documentElement;
+      var scrolled = doc.scrollTop || document.body.scrollTop;
+      var max = (doc.scrollHeight - doc.clientHeight) || 1;
+      var p = Math.max(0, Math.min(1, scrolled / max));
+      el.style.transform = "scaleX(" + p + ")";
+      ticking = false;
+    }
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(update);
+        ticking = true;
+      }
+    }
+    document.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("astro:before-swap", function () {
+      document.removeEventListener("scroll", onScroll);
+    }, { once: true });
+    update();
+  })();
+</script>

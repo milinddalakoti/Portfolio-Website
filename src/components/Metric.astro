@@ -1,0 +1,76 @@
+---
+/**
+ * Metric.astro
+ *
+ * Animated counter that ticks up from 0 to its `value` when scrolled into
+ * view. Uses requestAnimationFrame + easeOutCubic. Respects
+ * prefers-reduced-motion. aria-label is the formatted final value for
+ * screen readers; the visible text is the running counter.
+ */
+export interface Props {
+  /** Final value to count up to. */
+  value: number;
+  /** Decimal places to render. */
+  decimals?: number;
+  /** Suffix appended to the value (e.g. "x", "%", "/yr"). */
+  suffix?: string;
+  /** Animation duration in ms. */
+  duration?: number;
+  /** Accessible label. */
+  label?: string;
+  class?: string;
+}
+const {
+  value,
+  decimals = 0,
+  suffix = "",
+  duration = 1400,
+  label,
+  class: cls = "",
+} = Astro.props;
+const id = `m-${Math.random().toString(36).slice(2, 8)}`;
+const ariaLabel = label ?? `${value.toFixed(decimals)}${suffix}`;
+---
+
+<span
+  id={id}
+  data-metric-value={value}
+  data-metric-decimals={decimals}
+  data-metric-duration={duration}
+  aria-label={ariaLabel}
+  class:list={["tabular-nums", cls]}
+>0{suffix}</span>
+
+<script is:inline>
+  (function () {
+    if (typeof window === "undefined") return;
+    var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var io = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        var e = entries[i];
+        if (!e.isIntersecting) continue;
+        var el = e.target;
+        io.unobserve(el);
+        var final = parseFloat(el.getAttribute("data-metric-value") || "0");
+        var decimals = parseInt(el.getAttribute("data-metric-decimals") || "0", 10);
+        var dur = parseInt(el.getAttribute("data-metric-duration") || "1400", 10);
+        var suffix = el.innerHTML.replace(/^[0-9.]+/, "").replace(/^0+(\d)/, "$1");
+        if (reduced || final === 0) {
+          el.textContent = final.toFixed(decimals) + suffix;
+          return;
+        }
+        var t0 = performance.now();
+        function step(t) {
+          var p = Math.min(1, (t - t0) / dur);
+          // easeOutCubic
+          var e2 = 1 - Math.pow(1 - p, 3);
+          el.textContent = (final * e2).toFixed(decimals) + suffix;
+          if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+    }, { threshold: 0.4 });
+    var nodes = document.querySelectorAll("[data-metric-value]");
+    for (var j = 0; j < nodes.length; j++) io.observe(nodes[j]);
+  })();
+</script>

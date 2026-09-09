@@ -1,0 +1,157 @@
+---
+/**
+ * ThemeToggle.astro
+ *
+ * Three-state cycle toggle: light → dark → system → light.
+ * Stored in localStorage. "system" follows `prefers-color-scheme`.
+ *
+ * Visual: a single 36×36 round glass button in the top-right corner with
+ * a minimal stroke-only icon that changes shape per state:
+ *   - light  → sun (circle + 8 short rays)
+ *   - dark   → crescent moon
+ *   - system → half-shaded circle (auto)
+ *
+ * The icon shape itself is the indicator, so no extra labels needed.
+ */
+export interface Props {
+  class?: string;
+}
+const { class: cls = "" } = Astro.props;
+---
+<button
+  type="button"
+  class:list={[
+    "theme-toggle inline-flex h-9 w-9 items-center justify-center rounded-full bg-cream-paper border border-hairline-mist text-ink-black transition-all hover:scale-105",
+    cls,
+  ]}
+  aria-label="Theme: light. Click to change."
+  data-theme-toggle
+  data-mode="light"
+>
+
+  <!-- Sun: light mode. Stroke-only, 1.5px. -->
+  <svg
+    class="theme-icon h-[18px] w-[18px] hidden"
+    data-icon="light"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+  <!-- Moon: dark mode. Single closed crescent stroke path. -->
+  <svg
+    class="theme-icon h-[18px] w-[18px] hidden"
+    data-icon="dark"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+  </svg>
+  <!-- System: half-shaded circle, indicates "follow OS". -->
+  <svg
+    class="theme-icon h-[18px] w-[18px] hidden"
+    data-icon="system"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M12 3v18" />
+    <path d="M12 3a9 9 0 0 1 0 18" fill="currentColor" stroke="none" />
+  </svg>
+</button>
+<script is:inline>
+  (function () {
+    var KEY = "milind-theme";
+    // Cycle order starts on light (the default) and goes light → dark → system → light.
+    var ORDER = ["light", "dark", "system"];
+    var LABELS = {
+      light:  "Theme: light. Click for dark.",
+      dark:   "Theme: dark. Click for system.",
+      system: "Theme: system. Click for light."
+    };
+
+    function readStored() {
+      try {
+        var v = localStorage.getItem(KEY);
+        return v === "light" || v === "dark" || v === "system" ? v : "light";
+      } catch (_) { return "light"; }
+    }
+
+
+    function writeStored(mode) {
+      try { localStorage.setItem(KEY, mode); } catch (_) {}
+    }
+
+    function apply(mode) {
+      // Defer to the page-level helper installed by Layout.astro's
+      // pre-paint script (it handles data-theme + prefers-color-scheme).
+      // LIGHT is the @theme default; DARK requires an explicit data-theme.
+      if (typeof window.__applyThemeMode === "function") {
+        window.__applyThemeMode(mode);
+      } else {
+        var html = document.documentElement;
+        if (mode === "dark") html.setAttribute("data-theme", "dark");
+        else if (mode === "light") html.setAttribute("data-theme", "light");
+        else {
+          var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          if (dark) html.setAttribute("data-theme", "dark");
+          else html.setAttribute("data-theme", "light");
+        }
+      }
+    }
+
+    function showIcon(btn, mode) {
+      var icons = btn.querySelectorAll(".theme-icon");
+      for (var i = 0; i < icons.length; i++) {
+        var on = icons[i].getAttribute("data-icon") === mode;
+        icons[i].classList.toggle("hidden", !on);
+      }
+    }
+
+    function update(btn) {
+      var mode = readStored();
+      btn.setAttribute("data-mode", mode);
+      btn.setAttribute("aria-label", LABELS[mode]);
+      btn.setAttribute("title", LABELS[mode]);
+      showIcon(btn, mode);
+    }
+
+    function bind() {
+      var btns = document.querySelectorAll("[data-theme-toggle]");
+      for (var i = 0; i < btns.length; i++) {
+        (function (btn) {
+          if (btn.__themeBound) return;
+          btn.__themeBound = true;
+          update(btn);
+          btn.addEventListener("click", function (e) {
+            e.preventDefault();
+            var current = readStored();
+            var idx = ORDER.indexOf(current);
+            var next = ORDER[(idx + 1) % ORDER.length];
+            writeStored(next);
+            apply(next);
+            update(btn);
+          });
+        })(btns[i]);
+      }
+    }
+
+    bind();
+    document.addEventListener("astro:page-load", bind);
+  })();
+</script>

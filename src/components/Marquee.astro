@@ -1,0 +1,100 @@
+---
+/**
+ * Marquee.astro
+ *
+ * Infinite horizontal scrolling band. CSS-only via two duplicated
+ * <span> tracks offset by 50% of the strip width. The .marquee-track
+ * translates from 0 to -50% over `speed` seconds.
+ *
+ * Three variants (dark mode is permanent — token names are kept for
+ * backwards-compat with the variants used across the site, but the
+ * dark/cream names now mean "inverted" relative to a light page that
+ * no longer exists, so we hard-code the visual result):
+ *   - dark:   deep ink background, cream text (the default)
+ *   - cream:  light surface, deep ink text
+ *   - accent: warm accent background, cream text
+ *
+ * Reduced-motion: pauses the animation via media query, content remains
+ * visible. The track is aria-hidden because the duplicated text is
+ * semantically identical.
+ */
+export interface Props {
+  text: string;
+  variant?: "dark" | "cream" | "accent";
+  /** Seconds for one full pass; lower = faster */
+  speed?: number;
+  /** Separator between repeated tokens (rendered with spacing) */
+  separator?: string;
+  class?: string;
+}
+
+const {
+  text,
+  variant = "dark",
+  speed = 40,
+  separator = "—",
+  class: cls = "",
+} = Astro.props;
+
+// 2 halves × 6 tokens = 12 visible tokens at any time, animating -50% loops seamlessly.
+const halves = [0, 1];
+const tokensPerHalf = 6;
+const token = `${text} ${separator} `;
+
+// In the permanent-dark theme, the "dark" variant is a slightly deeper
+// ink than the page background, with cream text — for layered rhythm.
+// The "cream" variant is a lit surface (cream on dark) and the
+// "accent" variant is the orange band.
+// Variant backgrounds — flat token-based, auto-adapt light/dark via CSS variables.
+// dark = lit surface on canvas (paper texture), cream = same but explicit,
+// accent = green band.
+const variantBg = {
+  dark:   "!bg-pure-white !text-ink",
+  cream:  "!bg-cream-paper !text-ink",
+  accent: "!bg-fresh-grass !text-ink",
+}[variant];
+---
+
+<div
+  class:list={["marquee overflow-hidden border-y border-divider/60", variantBg, cls]}
+  role="presentation"
+  aria-hidden="true"
+>
+  <div
+    class="marquee-track flex whitespace-nowrap"
+    style={`--marquee-speed: ${speed}s;`}
+  >
+    {
+      halves.map(() => (
+        <span class="marquee-half inline-flex shrink-0 items-center">
+          {Array.from({ length: tokensPerHalf }).map(() => (
+            <span class="display-heading px-6 text-3xl leading-none tracking-tight sm:text-4xl md:text-5xl">
+              {token}
+            </span>
+          ))}
+        </span>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .marquee-track {
+    width: max-content;
+    animation: marquee-scroll var(--marquee-speed, 40s) linear infinite;
+    will-change: transform;
+  }
+  @keyframes marquee-scroll {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-50%, 0, 0); }
+  }
+  /* The two halves are identical; animating -50% lines up seamlessly. */
+  .marquee-half {
+    /* half of the track — second half is the duplicate that completes the loop */
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
+    }
+  }
+</style>

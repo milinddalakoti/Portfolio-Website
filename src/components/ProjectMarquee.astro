@@ -1,0 +1,249 @@
+---
+/**
+ * ProjectMarquee.astro
+ *
+ * Horizontal draggable strip of project cards with a live 01/04
+ * counter and page dots. Replaces the static 2-col grid on the
+ * homepage's Projects section.
+ *
+ * Interaction:
+ *   - Mouse / touch drag with momentum
+ *   - ← / → arrow keys (focus the strip first)
+ *   - Click a dot to jump
+ *   - Counter shows current/total cards in view (rounded up)
+ *
+ * Markup renders each project once only — no duplication, no wrap-around
+ * JS state machine. The counter and dots track the current visible card
+ * via clamped index math.
+ *
+ * Accessibility: the wrapper is a focusable region.
+ */
+import ProjectCard from "@/components/ProjectCard.astro";
+
+type Project = {
+  id: string;
+  data: {
+    title: string;
+    summary: string;
+    date: Date;
+    status: "shipped" | "in-progress" | "research" | "placeholder";
+    stack: string[];
+    metrics?: Array<{ label: string; value: string }>;
+  };
+};
+
+export interface Props {
+  projects: Project[];
+  class?: string;
+}
+
+const { projects, class: cls = "" } = Astro.props;
+const total = projects.length;
+---
+
+<div
+  class:list={["project-marquee relative", cls]}
+  data-total={total}
+>
+  <!-- Top bar: counter + dots -->
+  <div class="mb-6 flex items-center justify-between">
+    <p class="eyebrow">
+      <span class="pm-current font-medium text-ink">01</span>
+      <span class="text-muted"> / {String(total).padStart(2, "0")}</span>
+    </p>
+    <div class="flex items-center gap-1.5" aria-hidden="true">
+      {
+        projects.map((_, i) => (
+          <button
+            type="button"
+            class="pm-dot h-1.5 w-1.5 rounded-full bg-ink/20 transition-all"
+            data-index={i}
+            aria-label={`Go to project ${i + 1}`}
+          />
+        ))
+      }
+    </div>
+  </div>
+
+  <!-- The strip -->
+  <div
+    class="pm-strip relative overflow-x-auto overflow-y-hidden select-none"
+    tabindex="0"
+    role="region"
+    aria-label="Featured projects, drag horizontally"
+  >
+    <div class="pm-track flex items-stretch justify-center gap-6">
+      <!-- Project cards -->
+      {
+        projects.map((p) => (
+          <article class="pm-card w-[18rem] shrink-0 sm:w-[20rem] md:w-[22rem]">
+            <ProjectCard
+              href={`/projects/${p.id}`}
+              title={p.data.title}
+              summary={p.data.summary}
+              date={p.data.date}
+              status={p.data.status}
+              stack={p.data.stack}
+              metrics={p.data.metrics}
+            />
+          </article>
+        ))
+      }
+    </div>
+  </div>
+
+  <!-- Hint: drag to explore -->
+  <p class="mt-4 text-xs text-muted">
+    <span class="pm-hint inline-flex items-center gap-2">
+      <span aria-hidden="true">←</span>
+      <span>drag to explore</span>
+      <span aria-hidden="true">→</span>
+    </span>
+  </p>
+</div>
+
+<style>
+  .pm-strip {
+    scrollbar-width: none;          /* Firefox */
+    -ms-overflow-style: none;       /* IE/old Edge */
+    cursor: grab;
+    scroll-snap-type: x mandatory;
+    /* On narrow viewports we hide the full-bleed negative-margin trick
+       from the index.astro wrapper and instead let the strip bleed to
+       the right edge with a "peek" of the next card so users know it's
+       scrollable. */
+  }
+  .pm-strip::-webkit-scrollbar { display: none; }
+  .pm-strip:active { cursor: grabbing; }
+  .pm-card {
+    scroll-snap-align: start;
+  }
+  /* Mobile: shrink the cards and add a peek so users see the next card
+     and know to scroll. The `padding-right` on the track gives the last
+     card room to scroll fully into view. */
+  @media (max-width: 640px) {
+    .pm-card {
+      width: 78vw !important;
+    }
+    .pm-track {
+      padding-right: 1.5rem;
+    }
+  }
+  .pm-dot.is-active {
+    background-color: var(--color-ink);
+    width: 1.25rem;
+  }
+  .pm-strip:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+    border-radius: 0.75rem;
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var strips = document.querySelectorAll(".project-marquee");
+    strips.forEach(function (root) {
+      var strip = root.querySelector(".pm-strip");
+      var track = root.querySelector(".pm-track");
+      var currentEl = root.querySelector(".pm-current");
+      var dots = root.querySelectorAll(".pm-dot");
+      if (!strip || !track || !currentEl) return;
+
+      var total = parseInt(root.getAttribute("data-total") || "0", 10);
+      var isDown = false;
+      var startX = 0;
+      var startScroll = 0;
+      var moved = 0;
+
+      function cardWidth() {
+        var card = track.querySelector(".pm-card");
+        if (!card) return 320;
+        return card.getBoundingClientRect().width + 24; // include gap
+      }
+
+      function updateCounter() {
+        var cw = cardWidth();
+        if (cw <= 0) return;
+        var idx = Math.round(strip.scrollLeft / cw);
+        if (idx < 0) idx = 0;
+        if (idx > total - 1) idx = total - 1;
+        currentEl.textContent = String(idx + 1).padStart(2, "0");
+        for (var i = 0; i < dots.length; i++) {
+          if (i === idx) dots[i].classList.add("is-active");
+          else dots[i].classList.remove("is-active");
+        }
+      }
+
+      // Drag-to-scroll: pointer events cover mouse + touch + pen.
+      function onDown(e) {
+        // Only left mouse / touch / pen
+        if (e.pointerType === "mouse" && e.button !== 0) return;
+        isDown = true;
+        moved = 0;
+        startX = e.clientX;
+        startScroll = strip.scrollLeft;
+        strip.setPointerCapture(e.pointerId);
+        track.style.scrollSnapType = "none";
+      }
+      function onMove(e) {
+        if (!isDown) return;
+        var dx = e.clientX - startX;
+        moved = Math.abs(dx);
+        strip.scrollLeft = startScroll - dx;
+      }
+      function onUp(e) {
+        if (!isDown) return;
+        isDown = false;
+        track.style.scrollSnapType = "";
+        try { strip.releasePointerCapture(e.pointerId); } catch (_) {}
+      }
+      strip.addEventListener("pointerdown", onDown);
+      strip.addEventListener("pointermove", onMove);
+      strip.addEventListener("pointerup", onUp);
+      strip.addEventListener("pointercancel", onUp);
+      strip.addEventListener("pointerleave", onUp);
+
+      // Click-vs-drag: if the user dragged, suppress the click so cards don't navigate
+      strip.addEventListener(
+        "click",
+        function (e) {
+          if (moved > 6) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        },
+        true
+      );
+
+      // Update counter on scroll.
+      strip.addEventListener("scroll", function () {
+        updateCounter();
+      }, { passive: true });
+
+      // Arrow key navigation
+      strip.addEventListener("keydown", function (e) {
+        var cw = cardWidth();
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          strip.scrollBy({ left: cw, behavior: "smooth" });
+        } else if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          strip.scrollBy({ left: -cw, behavior: "smooth" });
+        }
+      });
+
+      // Dot click
+      for (var i = 0; i < dots.length; i++) {
+        (function (dot, idx) {
+          dot.addEventListener("click", function () {
+            var cw = cardWidth();
+            strip.scrollTo({ left: idx * cw, behavior: "smooth" });
+          });
+        })(dots[i], i);
+      }
+
+      updateCounter();
+    });
+  })();
+</script>

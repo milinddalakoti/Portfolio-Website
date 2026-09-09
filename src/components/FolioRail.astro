@@ -1,0 +1,384 @@
+---
+/**
+ * FolioRail.astro
+ *
+ * Persistent left-edge vertical navigation that runs on every page. The
+ * rail is the shared skeleton that makes the site feel like one
+ * continuous document — every route is a "chapter" and the active
+ * chapter is always visible, always labeled, always one click away.
+ *
+ * Design rules:
+ *   - Labels are ALWAYS visible. No hover-to-reveal. No mystery.
+ *   - The active slot is unmissable: filled marker, bold label, and a
+ *     left-edge accent bar that reads as a tab indicator.
+ *   - No scroll motion. The existing top scroll-progress bar already
+ *     tracks reading progress within a page. The rail only says which
+ *     chapter you're in.
+ *   - Every row is a full <a> with generous padding. Easy to click.
+ *   - Hidden below md so it doesn't crowd mobile.
+ *   - Auto-hides when near the top of the page (where the floating Nav
+ *     is fully visible) and re-appears when the user scrolls down.
+ */
+
+import { slots, type Slot } from "@/data/nav-slots";
+
+const base = import.meta.env.BASE_URL || "";
+
+// Build deepPrefixes map from shared slots for client injection.
+// matchPrefixes intentionally WITHOUT base — compared against base-stripped
+// pathname in the client script.
+const slotsData = slots.map((s) => ({
+  ...s,
+  href: base + s.href,
+}));
+
+// Server-render the active slot using Astro.url.pathname + hash.
+// On the single-page home, the URL pathname is base + "/" with a hash
+// like "#projects". On a deep page, pathname matches via matchPrefixes.
+function norm(p: string): string { return (p || "").replace(/\/+$/, "") || "/"; }
+function stripBase(p: string): string {
+  if (base && p.indexOf(base) === 0) {
+    return p.substring(base.length) || "/";
+  }
+  return p;
+}
+const currentPath = norm(stripBase(Astro.url.pathname));
+const currentHash = Astro.url.hash || "";
+function isCurrent(slot: Slot): boolean {
+  const rawHref = base + slot.href;
+  const linkPath = norm(stripBase(rawHref.split("#")[0] || "/"));
+  const linkHash = rawHref.split("#")[1] || "";
+  if (linkPath === currentPath) {
+    if (!linkHash || linkHash === "home") {
+      if (!currentHash || currentHash === "#home") return true;
+    } else if (currentHash === "#" + linkHash) {
+      return true;
+    }
+  }
+  if (slot.matchPrefixes) {
+    for (const p of slot.matchPrefixes) {
+      const np = norm(p);
+      if (currentPath === np) return true;
+      if (currentPath.startsWith(np + "/")) return true;
+    }
+  }
+  return false;
+}
+// (totalChapters removed — stale /07 text removed per user request)
+---
+
+<nav
+  class="folio-rail hidden md:flex"
+  aria-label="Site navigation"
+  data-folio-rail
+  data-base={base}
+  data-slots={JSON.stringify(slotsData)}
+>
+  {
+    slots.map((slot) => {
+      const active = isCurrent(slot);
+      const num = String(slot.n).padStart(2, "0");
+      const sectionId = slot.href.split("#")[1] || "";
+      return (
+        <a
+          href={base + slot.href}
+          class:list={["folio-row", { "folio-row--current": active }]}
+          aria-current={active ? "page" : undefined}
+          data-folio-slot
+          data-section={sectionId || undefined}
+        >
+          <span class="folio-marker" aria-hidden="true" />
+          <span class="folio-chapter" aria-hidden="true">{num}</span>
+          <span class="folio-label">{slot.label}</span>
+          <span class="folio-progress" aria-hidden="true" />
+        </a>
+      );
+    })
+  }
+</nav>
+
+<style>
+  /* Rail container — fixed to the left edge, vertically centered.
+     Flat white surface with hairline border, 50px radius per MindMarket. */
+  .folio-rail {
+    position: fixed;
+    top: 50%;
+    left: 1.25rem;
+    transform: translateY(-50%);
+    z-index: 30;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+    background-color: var(--color-pure-white);
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-full);
+    padding: 0.5rem 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  /* Auto-hide: when [data-hidden] is set by the Layout.astro scroll
+     script, the rail fades out and is removed from the hit-test. */
+  [data-folio-rail][data-hidden] {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-50%) translateY(-8px);
+  }
+
+  /* Each row is a full-bleed clickable anchor. 44px-ish tall so the
+     target is comfortable. The left edge has a 2px-wide "tab indicator"
+     strip that the active row fills with the accent color. */
+  .folio-row {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.55rem 0.75rem 0.55rem 0.9rem;
+    margin-left: 0;
+    color: var(--color-stone-gray);
+    text-decoration: none;
+    border-radius: 0 var(--radius-small) var(--radius-small) 0;
+    transition:
+      color 0.18s ease,
+      background-color 0.18s ease;
+  }
+  /* The left tab indicator — a 2px strip at the very left of each row.
+     Inactive rows have a transparent strip; active rows have a solid
+     accent strip. */
+  .folio-row::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.4rem;
+    bottom: 0.4rem;
+    width: 2px;
+    background: transparent;
+    border-radius: 1px;
+    transition: background-color 0.2s ease;
+  }
+
+  /* The marker — a small square. Inactive = outlined, active = filled. */
+  .folio-marker {
+    display: block;
+    width: 8px;
+    height: 8px;
+    border: 1.5px solid var(--color-divider);
+    border-radius: 1.5px;
+    background: transparent;
+    transition:
+      background-color 0.18s ease,
+      border-color 0.18s ease;
+  }
+
+  /* Chapter number (the "01", "02"...) — small mono, all-caps. */
+  .folio-chapter {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: var(--color-stone-gray);
+    font-variant-numeric: tabular-nums;
+    min-width: 1.5em;
+  }
+
+  /* Label — display font, all-caps, small, letter-spaced. Always
+     visible. */
+  .folio-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  /* Hover state for inactive rows. */
+  .folio-row:hover:not(.folio-row--current) {
+    color: var(--color-ink);
+    background-color: var(--color-cream-paper);
+  }
+  .folio-row:hover:not(.folio-row--current) .folio-marker {
+    background: var(--color-ink);
+  }
+  .folio-row:hover:not(.folio-row--current) .folio-chapter {
+    color: var(--color-ink);
+  }
+
+  /* Active row — filled marker, accent left strip, flat white bg. */
+  .folio-row--current {
+    color: var(--color-ink);
+    background-color: var(--color-pure-white);
+  }
+  .folio-row--current::before {
+    background: var(--color-accent);
+  }
+  .folio-row--current .folio-marker {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+  .folio-row--current .folio-chapter {
+    color: var(--color-accent);
+  }
+  .folio-row--current .folio-label {
+    font-weight: 700;
+  }
+
+  /* Reading-progress line on each row — a thin line under the label
+     that grows left-to-right as the user scrolls through that section.
+     Inactive rows are muted; the current section's line is accent. */
+  .folio-progress {
+    position: absolute;
+    left: 0.9rem;
+    right: 0.75rem;
+    bottom: 0.2rem;
+    height: 1.5px;
+    background: var(--color-divider);
+    border-radius: 1px;
+    transform-origin: left center;
+    transform: scaleX(var(--slot-progress, 0));
+    opacity: 0.35;
+    pointer-events: none;
+    transition: transform 0.12s linear, opacity 0.18s ease, background-color 0.18s ease;
+  }
+
+  /* Current section: accent green, full opacity. */
+  .folio-row--current .folio-progress {
+    background: var(--color-accent);
+    opacity: 1;
+  }
+
+  /* Focus ring — keyboard users get a clear outline. */
+  .folio-row:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Reduced motion: skip the smooth transition on the progress line. */
+  @media (prefers-reduced-motion: reduce) {
+    .folio-progress {
+      transition: none;
+    }
+  }
+</style>
+
+<script is:inline>
+  // Drive --slot-progress (0..1) on each FolioRail slot as the user
+  // scrolls. Each row's .folio-progress line scalesX by this value,
+  // growing left-to-right as the user reads through that section.
+  // Inactive rows use a muted divider color; the current section's
+  // row gets accent green via .folio-row--current.
+  // Pure rAF — no scroll listener spam, no jank.
+  (function () {
+    var rail = document.querySelector("[data-folio-rail]");
+    if (!rail) return;
+    // Guard: prevent duplicate listener registration on view transitions.
+    if (window.__folioRailScrollSynced) return;
+    window.__folioRailScrollSynced = true;
+    var ticking = false;
+    function update() {
+      var slots = document.querySelectorAll("[data-folio-slot]");
+      for (var i = 0; i < slots.length; i++) {
+        var slot = slots[i];
+        var sectionId = slot.getAttribute("data-section");
+        if (!sectionId) {
+          slot.style.setProperty("--slot-progress", "0");
+          continue;
+        }
+        var section = document.getElementById(sectionId);
+        if (!section) {
+          slot.style.setProperty("--slot-progress", "0");
+          continue;
+        }
+        var rect = section.getBoundingClientRect();
+        var vh = window.innerHeight;
+        // Progress: 0 when section enters viewport, 1 when it leaves.
+        var progress = (vh - rect.top) / (rect.height + vh);
+        progress = Math.max(0, Math.min(1, progress));
+        slot.style.setProperty("--slot-progress", progress.toFixed(4));
+      }
+      ticking = false;
+    }
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(update);
+        ticking = true;
+      }
+    }
+    document.addEventListener("scroll", onScroll, { passive: true });
+    update();
+    // Astro view transitions: clean up scroll listener on swap,
+    // re-attach on page load.
+    document.addEventListener("astro:before-swap", function () {
+      document.removeEventListener("scroll", onScroll);
+    });
+    document.addEventListener("astro:page-load", function () {
+      document.addEventListener("scroll", onScroll, { passive: true });
+      requestAnimationFrame(update);
+    });
+  })();
+</script>
+
+<script is:inline>
+  // Re-evaluate the active rail slot when the URL hash changes
+  // (e.g. user clicks a nav link, browser back/forward, or scroll-based
+  // hash update from Layout.astro's shared script).
+  // The server already rendered the correct initial state — this
+  // just keeps it in sync without a full page reload.
+  (function () {
+    function norm(p) { return (p || "").replace(/\/+$/, "") || "/"; }
+    function stripBase(p, base) {
+      if (base && p.indexOf(base) === 0) {
+        return p.substring(base.length) || "/";
+      }
+      return p;
+    }
+    // Guard: prevent duplicate listener registration on view transitions.
+    if (window.__folioRailActiveSynced) {
+      window.__folioRailActiveSynced();
+      return;
+    }
+    var rail = document.querySelector("[data-folio-rail]");
+    var base = rail ? rail.getAttribute("data-base") || "" : "";
+    var slotsData = JSON.parse(rail ? rail.getAttribute("data-slots") || "[]" : "[]");
+    var deepPrefixes = {};
+    for (var i = 0; i < slotsData.length; i++) {
+      if (slotsData[i].matchPrefixes && slotsData[i].matchPrefixes.length) {
+        deepPrefixes[slotsData[i].href] = slotsData[i].matchPrefixes;
+      }
+    }
+    function setActiveFromHash() {
+      var path = norm(stripBase(window.location.pathname, base));
+      var hash = window.location.hash || "";
+      var slots = document.querySelectorAll("[data-folio-slot]");
+      for (var i = 0; i < slots.length; i++) {
+        var slot = slots[i];
+        var href = slot.getAttribute("href") || "";
+        var linkPath = norm(stripBase(href.split("#")[0] || "/", base));
+        var linkHash = href.split("#")[1] || "";
+        var active = false;
+        if (linkPath === path) {
+          if (!linkHash || linkHash === "home") {
+            active = !hash || hash === "#home";
+          } else {
+            active = hash === "#" + linkHash;
+          }
+        }
+        if (!active && deepPrefixes[href]) {
+          for (var j = 0; j < deepPrefixes[href].length; j++) {
+            var pfx = norm(deepPrefixes[href][j]);
+            if (path === pfx || path.indexOf(pfx + "/") === 0) { active = true; break; }
+          }
+        }
+        if (active) {
+          slot.classList.add("folio-row--current");
+          slot.setAttribute("aria-current", "page");
+        } else {
+          slot.classList.remove("folio-row--current");
+          slot.removeAttribute("aria-current");
+        }
+      }
+    }
+    window.__folioRailActiveSynced = setActiveFromHash;
+    setActiveFromHash();
+    window.addEventListener("hashchange", setActiveFromHash);
+    document.addEventListener("astro:page-load", setActiveFromHash);
+  })();
+</script>

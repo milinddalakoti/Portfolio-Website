@@ -1,0 +1,548 @@
+@import "tailwindcss";
+
+/* Self-host fonts (no Google CDN — GDPR + speed) */
+/* Inter carries everything from 9px micro-labels to 144px display headlines. */
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/inter/800.css";
+
+/* Tailwind 4 theme tokens — LIGHT is the default. The light palette lives
+   directly in @theme so all HTML renders with MindMarket cream-paper
+   canvas by default. The dark palette is an override at
+   `html[data-theme="dark"]` — toggled by the pre-paint script in
+   Layout.astro when the user chooses dark mode. */
+@theme {
+  /* Colors — MindMarket light palette */
+  --color-cream:        #f5f1e4;   /* cream paper canvas */
+  --color-ink:          #2c2e2a;   /* ink black, primary text */
+  --color-accent:       #8ed462;   /* fresh grass green — structural accent */
+  --color-accent-hover: #7ec34e;   /* darker green */
+  --color-muted:        #80827f;   /* stone gray */
+  --color-divider:      #d5d5d4;   /* hairline mist */
+
+  /* New MindMarket aliases */
+  --color-pure-white:   #ffffff;
+  --color-fresh-grass:  #8ed462;
+  --color-coral-pop:     #ff705d;
+  --color-sky-pop:       #2ba0ff;
+  --color-sunshine-pop:  #f5e211;
+  --color-ink-black:    #2c2e2a;
+  --color-cream-paper:  #f5f1e4;
+  --color-stone-gray:   #80827f;
+  --color-hairline-mist: #d5d5d4;
+  --color-sandstone:    #e8e5dc;
+
+  --bg-grain:           #f5f1e4;
+
+  /* Fonts — Inter only */
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-display:
+    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  /* Typography — MindMarket fixed px scale, Inter throughout.
+     Weights: 400 body, 500 subheading, 600 small headings, 700 large. */
+  --text-body-sm:   15px;
+  --text-body-sm--line-height: 1.5;
+  --text-body-sm--font-weight: 400;
+
+  --text-body-md:   18px;
+  --text-body-md--line-height: 1.55;
+  --text-body-md--font-weight: 400;
+
+  --text-body-lg:   18px;
+  --text-body-lg--line-height: 1.55;
+  --text-body-lg--font-weight: 400;
+
+  --text-subheading: 20px;
+  --text-subheading--line-height: 1.25;
+  --text-subheading--font-weight: 500;
+
+  --text-heading-sm:  30px;
+  --text-heading-sm--line-height: 1.2;
+  --text-heading-sm--letter-spacing: -0.2px;
+  --text-heading-sm--font-weight: 600;
+
+  --text-heading:     53px;
+  --text-heading--line-height: 1.15;
+  --text-heading--letter-spacing: -2.12px;
+  --text-heading--font-weight: 600;
+
+  --text-heading-lg:  81px;
+  --text-heading-lg--line-height: 1.15;
+  --text-heading-lg--letter-spacing: -4.86px;
+  --text-heading-lg--font-weight: 500;
+
+  --text-display:     140px;
+  --text-display--line-height: 0.95;
+  --text-display--letter-spacing: -8.4px;
+  --text-display--font-weight: 500;
+
+  --text-display-lg:  144px;
+  --text-display-lg--line-height: 0.95;
+  --text-display-lg--letter-spacing: -8.64px;
+  --text-display-lg--font-weight: 500;
+
+  /* Map display tokens to hero (used by .hero-name class) */
+  --text-hero-xl:     var(--text-display-lg);
+  --text-hero-xl--line-height: var(--text-display-lg--line-height);
+  --text-hero-xl--letter-spacing: var(--text-display-lg--letter-spacing);
+  --text-hero-xl--font-weight: var(--text-display-lg--font-weight);
+
+  --text-hero-lg:     var(--text-heading-lg);
+  --text-hero-lg--line-height: var(--text-heading-lg--line-height);
+  --text-hero-lg--letter-spacing: var(--text-heading-lg--letter-spacing);
+  --text-hero-lg--font-weight: var(--text-heading-lg--font-weight);
+
+  --text-hero-md:     var(--text-heading);
+  --text-hero-md--line-height: var(--text-heading--line-height);
+  --text-hero-md--letter-spacing: var(--text-heading--letter-spacing);
+  --text-hero-md--font-weight: var(--text-heading--font-weight);
+
+  /* Radii — MindMarket: 50px for cards/nav/buttons, 10px for small elements */
+  --radius-cards:    50px;
+  --radius-nav:      50px;
+  --radius-buttons:  50px;
+  --radius-full:     50px;
+  --radius-full-2:   63.75px;
+  --radius-lg:       10px;
+  --radius-small:    10px;
+
+  /* Section padding */
+  --spacing-section:      clamp(4.5rem, 8vw, 7rem);
+  --spacing-section-tight: clamp(2.5rem, 4.5vw, 4rem);
+  --spacing-block:        clamp(1.5rem, 3vw, 2.5rem);
+
+  /* Fallback nav height — overridden by JS */
+  --nav-height: 96px;
+}
+
+@layer base {
+  :root {
+    /* Light is the default — MindMarket cream-paper canvas */
+    color-scheme: light;
+  }
+
+  /* On the single-page home, sections are scroll-anchored via #hash.
+     Push the heading below the sticky nav so it isn't covered when
+     the browser auto-scrolls to a hash. */
+  section[id] {
+    scroll-margin-top: var(--nav-height, 96px);
+  }
+
+  /* Dark mode override — applied when the user has chosen "dark" via
+     the cycle toggle. Light is the @theme default. */
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --color-cream:        #0c0c0e;   /* deep canvas */
+    --color-ink:          #f4f1ea;   /* light text */
+    --color-accent:       #8ed462;   /* green — same, works on dark */
+    --color-accent-hover: #7ec34e;
+    --color-muted:        #9a978f;
+    --color-divider:      #26252a;
+    --color-pure-white:   #1a1a19;  /* card surface */
+    --color-cream-paper:  #1a1a19;  /* card surface — was canvas bug */
+    --color-ink-black:    #f4f1ea;
+    --color-hairline-mist: #26252a; /* subtle border on dark */
+    --color-stone-gray:   #9a978f;
+    --color-sandstone:    #1a1a19;  /* code block bg */
+    --color-fresh-grass:  #8ed462;  /* green accent preserved */
+    --color-coral-pop:    #ff705d;  /* preserved */
+    --color-sky-pop:      #2ba0ff;  /* preserved */
+    --color-sunshine-pop: #f5e211;  /* preserved */
+    --bg-grain:           #0c0c0e;
+  }
+
+  html {
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+    overflow-x: clip;
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+  body {
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    font-size: var(--text-body-md);
+    line-height: var(--text-body-md--line-height);
+    font-weight: var(--text-body-md--font-weight);
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+  /* Mobile dock padding */
+  @media (max-width: 767px) {
+    body { padding-bottom: 4rem; }
+  }
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-cream);
+  }
+  /* Custom cursor (fine pointer only) — plain ink ring + dot */
+  @media (pointer: fine) {
+    html.has-cursor,
+    html.has-cursor * {
+      cursor: none !important;
+    }
+    .mc-ring {
+      position: fixed;
+      top: 0; left: 0;
+      width: 40px; height: 40px;
+      border: 1.5px solid var(--color-ink);
+      border-radius: 9999px;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate3d(-50%, -50%, 0);
+      transition: width 0.18s ease, height 0.18s ease, border-color 0.18s ease, background-color 0.18s ease, border-radius 0.18s ease, opacity 0.18s ease;
+    }
+    .mc-ring.is-active {
+      width: 80px;
+      height: 80px;
+      background-color: transparent;
+      border-color: var(--color-accent);
+      border-radius: 0;
+    }
+    .mc-ring.is-active::before,
+    .mc-ring.is-active::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: var(--color-accent);
+    }
+    .mc-ring.is-active::before {
+      width: 28px;
+      height: 4px;
+    }
+    .mc-ring.is-active::after {
+      width: 4px;
+      height: 28px;
+    }
+    .mc-dot {
+      position: fixed;
+      top: 0; left: 0;
+      width: 8px; height: 8px;
+      border-radius: 9999px;
+      background-color: var(--color-ink);
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate3d(-50%, -50%, 0);
+    }
+    /* Color-inversion lens — sits behind ring+dot, inverts content under cursor */
+    .mc-lens {
+      position: fixed;
+      top: 0; left: 0;
+      width: 40px; height: 40px;
+      border-radius: 9999px;
+      pointer-events: none;
+      z-index: 9997;
+      transform: translate3d(-50%, -50%, 0);
+      opacity: 0;
+      transition: opacity 0.18s ease;
+      backdrop-filter: invert(1);
+      will-change: transform;
+    }
+    .mc-lens.is-active {
+      opacity: 1;
+    }
+    /* When ring grows on interactive hover, lens matches ring size */
+    .mc-lens.ring-active {
+      width: 80px; height: 80px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .mc-ring, .mc-dot, .mc-lens { display: none; }
+      html.has-cursor, html.has-cursor * { cursor: auto !important; }
+    }
+  }
+  }
+
+  @layer components {
+  .container-page {
+    margin-inline: auto;
+    max-width: 1200px;
+    padding-inline: clamp(1.5rem, 4vw, 3rem);
+  }
+  .display-heading {
+    font-family: var(--font-display);
+    font-weight: 500;
+    text-wrap: balance;
+  }
+  .link-accent {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklab, var(--color-accent) 30%, transparent);
+    text-underline-offset: 4px;
+    transition: text-decoration-color 0.2s;
+  }
+  .link-accent:hover {
+    text-decoration-color: var(--color-accent);
+  }
+  .divider-soft {
+    border-top: 1px solid var(--color-divider);
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--radius-small);
+    border: 1.5px solid var(--color-divider);
+    padding: 0.4rem 0.85rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-ink);
+    letter-spacing: 0.005em;
+    background-color: var(--color-cream-paper);
+  }
+  /* Flat surface — no backdrop-filter, no box-shadow, no color-mix tints.
+     White elevated card with hairline border. Use on Nav, ProjectCard,
+     metric tiles, and any panel that should read as a clean surface. */
+  .glass,
+  .glass-strong,
+  .glass-panel,
+  .glass-rim {
+    background-color: var(--color-pure-white);
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-cards);
+  }
+  .glass-rim {
+    /* Rim highlight replaced by plain border — no shadow */
+  }
+  .card {
+    border-radius: var(--radius-cards);
+    border: 1px solid var(--color-divider);
+    background-color: var(--color-pure-white);
+    padding: 2rem;
+    transition: border-color 0.2s ease;
+  }
+  .card:hover {
+    border-color: var(--color-ink);
+  }
+  /* Body prose (used by /plan and project pages) */
+  .prose-body {
+    max-width: 38rem;
+    color: var(--color-ink);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    font-weight: 400;
+  }
+  .prose-body p { margin-block: 1.1em; }
+  .prose-body h2 {
+    margin-block: 1.5em 0.5em;
+    font-family: var(--font-display);
+    font-size: var(--text-hero-md);
+    font-weight: 600;
+    line-height: var(--text-hero-md--line-height);
+    letter-spacing: var(--text-hero-md--letter-spacing);
+    text-wrap: balance;
+  }
+  .prose-body h3 {
+    margin-block: 1.4em 0.4em;
+    font-size: 1.375rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .prose-body a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .prose-body ul { margin-block: 1em; padding-left: 1.25rem; list-style: disc; }
+  .prose-body li { margin-block: 0.4em; }
+  .prose-body :where(pre) {
+    background-color: var(--color-sandstone);
+    border: 1px solid var(--color-divider);
+    border-radius: 0.5rem;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    margin-block: 1.5em;
+  }
+  .prose-body :where(code) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.92em;
+    background-color: var(--color-cream-paper);
+    padding: 0.1em 0.4em;
+    border-radius: 0.3em;
+  }
+  .prose-body :where(pre code) {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit;
+  }
+  .prose-body :where(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin-block: 1.5em;
+    font-size: 0.95rem;
+  }
+  .prose-body :where(th, td) {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--color-divider);
+  }
+  .prose-body :where(th) {
+    font-weight: 600;
+    color: var(--color-ink);
+    background-color: var(--color-cream-paper);
+  }
+  .prose-body :where(blockquote) {
+    border-left: 3px solid var(--color-accent);
+    margin-block: 1.5em;
+    padding: 0.25em 0 0.25em 1.25em;
+    color: var(--color-muted);
+    font-style: italic;
+  }
+  .prose-body :where(hr) {
+    border: 0;
+    border-top: 1px solid var(--color-divider);
+    margin-block: 2.5em;
+  }
+  .prose-body :where(ul) { list-style: disc; padding-left: 1.5rem; }
+  .prose-body :where(ol) { list-style: decimal; padding-left: 1.5rem; }
+}
+
+@layer utilities {
+  /* IntersectionObserver fade-in target — toggled by Reveal.astro */
+  .reveal {
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+      opacity 0.6s ease-out,
+      transform 0.6s ease-out;
+    will-change: opacity, transform;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  /* Stagger helper */
+  .reveal[data-stagger="1"] { transition-delay: 0.05s; }
+  .reveal[data-stagger="2"] { transition-delay: 0.10s; }
+  .reveal[data-stagger="3"] { transition-delay: 0.15s; }
+  .reveal[data-stagger="4"] { transition-delay: 0.20s; }
+  .reveal[data-stagger="5"] { transition-delay: 0.25s; }
+  .reveal[data-stagger="6"] { transition-delay: 0.30s; }
+
+  .section-block { padding-block: var(--spacing-section); }
+  .section-block-tight { padding-block: var(--spacing-section-tight); }
+  .section-block-snug {
+    padding-block: calc(var(--spacing-section) * 0.55);
+  }
+
+  /* Hero grid for two-line display heading */
+  .hero-name {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 10vw, var(--text-hero-xl));
+    line-height: var(--text-hero-xl--line-height);
+    letter-spacing: var(--text-hero-xl--letter-spacing);
+    font-weight: var(--text-hero-xl--font-weight);
+    text-wrap: balance;
+  }
+  .hero-name-lg {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 6vw, var(--text-hero-lg));
+    line-height: var(--text-hero-lg--line-height);
+    letter-spacing: var(--text-hero-lg--letter-spacing);
+    font-weight: var(--text-hero-lg--font-weight);
+    text-wrap: balance;
+  }
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-ink);
+  }
+  .display-tracked {
+    font-family: var(--font-display);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .section-folio {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2vw, 2rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--color-stone-gray);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+  .strip-card {
+    width: clamp(18rem, 28vw, 22rem);
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+}
+
+/* Custom utilities — Tailwind v4 does not auto-derive from @theme tokens. */
+@utility pt-section { padding-top: var(--spacing-section); }
+@utility pb-section { padding-bottom: var(--spacing-section); }
+@utility mt-section { margin-top: var(--spacing-section); }
+@utility mb-section { margin-bottom: var(--spacing-section); }
+
+/* Page-wide subtle paper grain (CSS-only) — flat paper texture over the
+   cream canvas. Opacity very low so it adds tactile warmth without
+   muddying text. Uses plain opacity (no blend modes) per MindMarket. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch' seed='7'/><feColorMatrix type='matrix' values='0 0 0 0 0.18  0 0 0 0 0.18  0 0 0 0 0.18  0 0 0 1.4 -0.5'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 200px 200px;
+  background-color: var(--color-cream);
+  opacity: 0.12;
+  transition: background-color 0.4s ease, opacity 0.4s ease;
+}
+/* Dark mode: lighter grain on dark canvas */
+html[data-theme="dark"] body::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch' seed='7'/><feColorMatrix type='matrix' values='0 0 0 0 0.95  0 0 0 0 0.94  0 0 0 0 0.91  0 0 0 1.4 -0.5'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-color: var(--color-cream);
+  opacity: 0.08;
+  mix-blend-mode: difference;
+}
+@media (prefers-reduced-motion: reduce) {
+  body::before { opacity: 0.3; }
+  html[data-theme="dark"] body::before { opacity: 0.12; }
+}
+@media (prefers-contrast: more) {
+  body::before { display: none; }
+}
+
+/* Page transitions — fade old page out, slide new page in.
+   Triggered by Astro's <ViewTransitions /> in the layout. */
+@layer base {
+  @view-transition {
+    navigation: auto;
+  }
+  ::view-transition-old(root) {
+    animation: vt-fade-out 180ms ease-out both;
+  }
+  ::view-transition-new(root) {
+    animation: vt-slide-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes vt-fade-out {
+    to { opacity: 0; }
+  }
+  @keyframes vt-slide-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation: none;
+    }
+  }
+}
+@utility my-section-tight { margin-block: var(--spacing-section-tight); }
+@utility max-w-prose-wide { max-width: 42rem; }

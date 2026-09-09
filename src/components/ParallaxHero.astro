@@ -1,0 +1,79 @@
+---
+/**
+ * ParallaxHero.astro
+ *
+ * Wraps a hero section. The first child element receives a subtle
+ * upward parallax — it drifts down as the user scrolls, creating
+ * the impression of depth. Gated behind prefers-reduced-motion
+ * and disabled on small viewports where the effect reads as jitter.
+ *
+ * The parallax uses a CSS custom property `--parallax-y` updated
+ * via rAF on scroll. Keep the parallax depth shallow (≤ 60px) —
+ * the effect should be felt, not seen.
+ */
+export interface Props {
+  /** max scroll-pixels to translate, default 60 */
+  depth?: number;
+  class?: string;
+}
+const { depth = 60, class: cls = "" } = Astro.props;
+---
+
+<div
+  class:list={["parallax-hero relative", cls]}
+  data-parallax
+  data-depth={depth}
+>
+  <div data-parallax-target class="parallax-target">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .parallax-target {
+    will-change: transform;
+    transition: transform 60ms linear;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .parallax-target { transform: none !important; }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.innerWidth < 768) return;  // skip on small viewports
+
+    var heroes = document.querySelectorAll("[data-parallax]");
+    if (!heroes.length) return;
+
+    var ticking = false;
+    function update() {
+      heroes.forEach(function (hero) {
+        var target = hero.querySelector("[data-parallax-target]");
+        if (!target) return;
+        var rect = hero.getBoundingClientRect();
+        // Only translate while the hero is in view; once it scrolls off,
+        // hold the last transform to avoid visual snap.
+        if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+        var progress = 1 - (rect.top / window.innerHeight);
+        var depth = parseFloat(hero.getAttribute("data-depth") || "60");
+        var y = Math.max(0, Math.min(1, progress)) * depth;
+        target.style.transform = "translate3d(0," + y.toFixed(1) + "px,0)";
+      });
+      ticking = false;
+    }
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(update);
+        ticking = true;
+      }
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    update();
+
+    document.addEventListener("astro:before-swap", function () {
+      window.removeEventListener("scroll", onScroll);
+    }, { once: true });
+  })();
+</script>

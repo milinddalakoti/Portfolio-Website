@@ -1,0 +1,77 @@
+---
+title: "PPO Reinforcement Learning Agent for Cuphead Boss Combat"
+summary: "Trained a Recurrent PPO (MlpLstmPolicy) agent to master multi-phase boss fights in Cuphead. 22× damage improvement; ran 77,000 episodes with curriculum learning."
+date: 2026-08-15
+role: "Solo dissertation project"
+status: "shipped"
+stack:
+  - Python
+  - PyTorch
+  - Stable-Baselines3
+  - Gymnasium
+  - C#
+  - BepInEx/Harmony
+  - TCP networking
+  - pynput
+githubUrl: "https://github.com/milinddalakoti/ireland-visa-journey/tree/main/projects/existing-ppo-rl-cuphead"
+metrics:
+  - label: "Damage (first 1k eps)"
+    value: "5.5 → 120.2"
+  - label: "Improvement"
+    value: "22×"
+  - label: "Episodes trained"
+    value: "77,000"
+  - label: "Stages"
+    value: "4"
+featured: true
+order: 1
+---
+
+## Problem
+
+Cuphead is a notoriously difficult 2D platformer where each boss has multiple
+attack phases, tight timing windows, and punishing difficulty curves. State of 
+the art scripted AI struggles because each phase demands a different action
+policy.
+
+I wanted to know: can a single recurrent RL agent learn to switch between
+phase specific behaviours without explicit phase labels?
+
+## Approach
+
+1. **Game instrumentation:** A C# BepInEx plugin (Plugin.cs, 1961 lines) taps
+   into the running game, extracts real time boss HP, phase, and player state
+   over TCP. Actions are injected back via `pynput` keystroke synthesis.
+
+2. **Recurrent PPO (MlpLstmPolicy)** in Stable Baselines3 — the LSTM lets the
+   agent remember recent observations (useful for timing dodges) without
+   needing perfect state representation.
+
+3. **4 stage procedural difficulty curriculum:** Main → BigSlime → Tombstone
+   with forward/reverse modes, phase jump, and auto set health. Reverse
+   curriculum enables early wins to bootstrap learning.
+
+4. **77,000 training episodes** with reward shaping tuned for damage dealt,
+   damage avoided, and phase completion bonuses. Detailed analysis of
+   convergence and reward shaping local optima.
+
+## Result
+
+- **22× damage improvement** (5.5 → 120.2) in the first 1,000 episode run.
+- **Recurrent policy beat feed forward** baseline on phase transition
+  recovery (LSTM remembered pre dodge state).
+- **Reverse curriculum critical** for early learning signal.
+
+## Artefacts
+
+- IEEE format thesis (M.Sc. dissertation).
+- Project Definition Document.
+- Published style literature review (13 papers).
+- Training report with multiple run analyses.
+
+## Why this matters
+
+RL is a less common skill on graduate CVs. Combined with the C# Unity
+modding work (also in this repo), it signals depth that most applicants
+lack. Reproducible SB3 + LSTM pipelines are also directly relevant for
+simulation, game, and recommendation system teams.

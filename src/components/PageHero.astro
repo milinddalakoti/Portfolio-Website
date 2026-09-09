@@ -1,0 +1,74 @@
+---
+/**
+ * PageHero.astro
+ *
+ * Shared editorial hero used by the inner pages (now, contact, plan, etc.).
+ * Mirrors the home hero's vocabulary: oversized display type, small label,
+ * mixed-case tracked surname when present, optional supporting paragraph.
+ *
+ * Props:
+ *   eyebrow: small uppercase label
+ *   title:   the main display text (set in display-heading at hero-lg)
+ *   titleTracked: optional second line, set in .display-tracked (lowercase,
+ *                 spaced). Renders on a new line below `title`.
+ *   description: optional paragraph
+ *   meta:    optional array of small meta items (e.g. ["Last updated 2 Sept", "5 min read"])
+ *   folio:   optional magazine-style folio, e.g. "02 / 04"
+ */
+export interface Props {
+  eyebrow?: string;
+  title: string;
+  titleTracked?: string;
+  description?: string;
+  meta?: string[];
+  folio?: string;
+  class?: string;
+}
+const {
+  eyebrow,
+  title,
+  titleTracked,
+  description,
+  meta = [],
+  folio,
+  class: cls = "",
+} = Astro.props;
+---
+
+<section class:list={["container-page relative pt-section", cls]}>
+  {folio && <span class="section-folio absolute right-0 top-12 hidden md:block" data-parallax-folio>{folio}</span>}
+
+  {eyebrow && (
+    <p class="eyebrow mb-8 inline-flex items-center gap-2">
+      <span aria-hidden="true">·</span>
+      {eyebrow}
+    </p>
+  )}
+
+  <h1 class="hero-name-lg text-ink" data-parallax-target>
+    {title}
+    {titleTracked && (
+      <>
+        <br />
+        <span class="display-tracked">{titleTracked}</span>
+      </>
+    )}
+  </h1>
+
+  {description && (
+    <p class="mt-10 max-w-prose-wide text-body-lg text-ink/95 leading-relaxed font-medium">
+      {description}
+    </p>
+  )}
+
+  {meta.length > 0 && (
+    <ul class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium text-ink/70">
+      {meta.map((m, i) => (
+        <li class="inline-flex items-center gap-x-5">
+          {i > 0 && <span aria-hidden="true" class="text-divider">/</span>}
+          <span>{m}</span>
+        </li>
+      ))}
+    </ul>
+  )}
+</section>

@@ -1,0 +1,128 @@
+---
+/**
+ * Cursor.astro
+ *
+ * Custom cursor: a 28px ring with a 5px dot at the center. The ring grows
+ * to 56px when hovering over interactive elements (a, button, [role="button"]).
+ *
+ * A color-inversion lens (mc-lens) sits behind the ring. It uses
+ * backdrop-filter: invert(1) to invert the page content inside the
+ * circle's circumference. The lens follows the cursor immediately and
+ * fades out after a brief idle period, so colors revert as the cursor
+ * moves away from any spot.
+ *
+ * Skipped on:
+ *   - coarse pointer (touch devices) — uses native cursor
+ *   - prefers-reduced-motion: reduce — cursor hidden, native fallback used
+ *   - no JS — the <noscript> CSS branch keeps native cursor
+ *
+ * The cursor lives outside the page flow (position: fixed) and uses
+ * CSS variables so it stays visible across cream / dark backgrounds.
+ */
+---
+
+<div class="mc-lens" aria-hidden="true" data-cursor-lens></div>
+<div class="mc-ring" aria-hidden="true" data-cursor-ring></div>
+<div class="mc-dot"  aria-hidden="true" data-cursor-dot></div>
+
+<script is:inline>
+  (function () {
+    // Gate: only enable on fine pointer devices
+    if (!window.matchMedia("(pointer: fine)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    document.documentElement.classList.add("has-cursor");
+
+    var ring = document.querySelector("[data-cursor-ring]");
+    var dot  = document.querySelector("[data-cursor-dot]");
+    var lens = document.querySelector("[data-cursor-lens]");
+    if (!ring || !dot || !lens) return;
+
+    var target = { x: -100, y: -100 };
+    var smooth = { x: -100, y: -100 };
+    var HALF_LIFE_MS = 70;
+    var LENS_IDLE_MS = 150;
+    var idleTimer = null;
+
+    function onMove(e) {
+      target.x = e.clientX;
+      target.y = e.clientY;
+      // Dot and lens snap immediately; ring lags via RAF.
+      // Subtract half the element size so the center of each circle
+      // sits on the cursor, not the top-left corner.
+      var lensHalf = lens.classList.contains("ring-active") ? 40 : 20;
+      dot.style.transform =
+        "translate3d(" + (target.x - 4) + "px," + (target.y - 4) + "px,0)";
+      lens.style.transform =
+        "translate3d(" + (target.x - lensHalf) + "px," + (target.y - lensHalf) + "px,0)";
+      lens.classList.add("is-active");
+      // Fade out the lens after a brief idle — colors revert naturally
+      // via backdrop-filter when the lens moves away.
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(function () {
+        lens.classList.remove("is-active");
+      }, LENS_IDLE_MS);
+    }
+    window.addEventListener("pointermove", onMove, { passive: true });
+
+    // Active state on interactive elements
+    function isInteractive(el) {
+      if (!el) return false;
+      if (el.closest("a, button, [role='button'], input, textarea, select, label"))
+        return true;
+      return false;
+    }
+    document.addEventListener("pointerover", function (e) {
+      if (isInteractive(e.target)) ring.classList.add("is-active");
+    });
+    document.addEventListener("pointerout", function (e) {
+      if (isInteractive(e.target)) ring.classList.remove("is-active");
+    });
+
+    function tick() {
+      var now = performance.now();
+      var last = tick._last || now;
+      var dt = now - last;
+      tick._last = now;
+      var alpha = 1 - Math.exp(-dt / (HALF_LIFE_MS / Math.LN2));
+      smooth.x += (target.x - smooth.x) * alpha;
+      smooth.y += (target.y - smooth.y) * alpha;
+      ring.style.transform =
+        "translate3d(" + (smooth.x - 20) + "px," + (smooth.y - 20) + "px,0)";
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+
+    // Hide cursor on pointerleave the window
+    document.addEventListener("mouseleave", function () {
+      ring.style.opacity = "0";
+      dot.style.opacity = "0";
+      lens.classList.remove("is-active");
+      lens.style.opacity = "0";
+    });
+    document.addEventListener("mouseenter", function () {
+      ring.style.opacity = "1";
+      dot.style.opacity = "1";
+      lens.style.opacity = "1";
+    });
+
+    // Sync lens active state with ring growth on interactive elements
+    // (lens grows to match the ring size for a consistent visual effect)
+    var ringObserver = new MutationObserver(function (mutations) {
+      for (var i = 0; i < mutations.length; i++) {
+        if (mutations[i].attributeName === "class") {
+          // Lens size matches ring size via CSS .is-active on ring
+          lens.classList.toggle("ring-active", ring.classList.contains("is-active"));
+        }
+      }
+    });
+    ringObserver.observe(ring, { attributes: true, attributeFilter: ["class"] });
+
+    // Cleanup on Astro route change
+    document.addEventListener("astro:before-swap", function () {
+      window.removeEventListener("pointermove", onMove);
+      if (idleTimer) clearTimeout(idleTimer);
+      ringObserver.disconnect();
+    }, { once: true });
+  })();
+</script>
