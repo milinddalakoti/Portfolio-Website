@@ -102,7 +102,8 @@ const statusLabel = {
 // Experience content — was in src/pages/experience.astro before the redirect.
 const experience = [
   {
-    role: "Production Analyst",
+    role: "Software Developer",
+    subtitle: "Production Analyst",
     org: "JP Morgan",
     period: "2023 — 2024",
     location: "Bengaluru, IN",
@@ -113,14 +114,15 @@ const experience = [
     ],
   },
   {
-    role: "Production Analyst",
+    role: "Data Analyst",
     org: "Wiley",
     period: "2022 — 2023",
     location: "Bengaluru, IN",
     bullets: [
-      "Supported the Bullion (Precious Metals) business within Macro Commodities.",
+      "Production Analyst supporting the Bullion (Precious Metals) business within Macro Commodities.",
       "End-to-end management of MQ certificates (generation + renewal).",
       "Cross-trained peers and new joiners on Bullion and Agriculture businesses.",
+      "Production support for data pipelines and incident response workflows.",
     ],
   },
 ];
@@ -133,8 +135,15 @@ const education = [
     period: "2025 — Present",
     location: "Galway, IE",
     bullets: [
-      "Dissertation: PPO Reinforcement Learning Agent for Cuphead Boss Combat (Recurrent PPO MlpLstmPolicy, 10k episodes, 22× damage improvement).",
-      "Coursework: RL, deep learning, graph ML, quantum ML, NLP, knowledge graphs.",
+      "Dissertation: PPO Reinforcement Learning Agent for Cuphead Boss Combat (Recurrent PPO MlpLstmPolicy, 77k episodes, 22× damage improvement).",
+    ],
+    coursework: [
+      "Reinforcement Learning",
+      "Deep Learning",
+      "Graph ML",
+      "Quantum ML",
+      "NLP",
+      "Knowledge Graphs",
     ],
   },
   {
@@ -218,6 +227,7 @@ const base = import.meta.env.BASE_URL || "";
     </Reveal>
   </section>
 
+
   <Reveal stagger={1}>
     <Divider class="my-section-tight" />
   </Reveal>
@@ -258,26 +268,68 @@ const base = import.meta.env.BASE_URL || "";
     </div>
   </section>
 
+
   <Reveal stagger={1}>
     <Divider class="my-section-tight" />
   </Reveal>
 
-  <!-- 03 · PROJECTS -->
-  <section id="projects" class="container-page section-block-snug relative">
+  <!-- 03 · EXPERIENCE -->
+  <section id="experience" class="container-page section-block-snug relative">
     <Reveal stagger={1}>
-      <p class="eyebrow">Projects</p>
-      <h2 class="hero-name-lg mt-3 text-ink">Selected work.</h2>
+      <p class="eyebrow">Production support → ML</p>
+      <h2 class="hero-name-lg mt-3 text-ink">Experience.</h2>
     </Reveal>
     <Reveal stagger={2} class="mt-6 max-w-prose-wide text-body-lg text-ink/90">
       <p>
-        Selected work from my M.Sc. and JP Morgan/Wiley production support —
-        uplifted into reproducible, well-tested artefacts.
+        Production support at JP Morgan + Wiley (2 yrs), M.Sc. AI at Galway,
+        research-led. The thread: turning incident data into decisions.
       </p>
     </Reveal>
-    <Reveal stagger={3} class="mt-12 md:-mx-[calc((100vw-100%)/2)]">
-      <ProjectMarquee projects={projects} />
+
+    <Reveal stagger={3} class="mt-12">
+      <p class="eyebrow">Timeline · most recent first</p>
+    </Reveal>
+
+    <ol class="mt-12 space-y-16">
+      {
+        experience.map((item, idx) => (
+          <Reveal as="li" stagger={((idx % 6) + 1) as 1 | 2 | 3 | 4 | 5 | 6} class="relative grid grid-cols-1 gap-6 border-l-2 border-divider pl-8 md:grid-cols-[10rem_1fr] md:gap-12">
+              <span
+                aria-hidden="true"
+                class="absolute -left-[7px] top-1.5 inline-block h-3 w-3 rounded-full bg-accent"
+              />
+              <div>
+                <p class="display-heading text-xl text-ink">{item.period}</p>
+                <p class="mt-1 text-sm text-ink/70">{item.location}</p>
+                <p class="mt-4 eyebrow text-ink">No. {String(experience.length - idx).padStart(2, "0")}</p>
+              </div>
+              <div>
+                <h3 class="hero-name-lg text-ink">{item.org}</h3>
+                <p class="mt-2 text-lg text-ink/90 font-semibold">{item.role}</p>
+                {item.subtitle && <p class="mt-1 text-sm text-ink/70">{item.subtitle}</p>}
+                <ul class="mt-6 max-w-prose-wide space-y-2.5 text-base text-ink/95 font-medium">
+                  {item.bullets.map((b) => (
+                    <li class="leading-relaxed before:mr-2 before:text-accent before:content-['—']">{b}</li>
+                  ))}
+                </ul>
+              </div>
+          </Reveal>
+        ))
+      }
+    </ol>
+
+    <Reveal stagger={1} class="mt-20 max-w-prose-wide">
+      <p class="text-base text-ink/90 leading-relaxed font-medium">
+        References available on request. See
+        <a
+          href="https://linkedin.com/in/milind-dalakoti"
+          rel="noopener noreferrer"
+          class="link-accent">LinkedIn</a
+        > for endorsements.
+      </p>
     </Reveal>
   </section>
+
 
   <Reveal stagger={1}>
     <Divider class="my-section-tight" />
@@ -345,71 +397,12 @@ const base = import.meta.env.BASE_URL || "";
     </Reveal>
   </section>
 
-  <Reveal stagger={1}>
-    <Divider class="my-section-tight" />
-  </Reveal>
-
-  <!-- 05 · EXPERIENCE -->
-  <section id="experience" class="container-page section-block-snug relative">
-    <Reveal stagger={1}>
-      <p class="eyebrow">Production support → ML</p>
-      <h2 class="hero-name-lg mt-3 text-ink">Experience.</h2>
-    </Reveal>
-    <Reveal stagger={2} class="mt-6 max-w-prose-wide text-body-lg text-ink/90">
-      <p>
-        Production support at JP Morgan + Wiley (2 yrs), M.Sc. AI at Galway,
-        research-led. The thread: turning incident data into decisions.
-      </p>
-    </Reveal>
-
-    <Reveal stagger={3} class="mt-12">
-      <p class="eyebrow">Timeline · most recent first</p>
-    </Reveal>
-
-    <ol class="mt-12 space-y-16">
-      {
-        experience.map((item, idx) => (
-          <Reveal as="li" stagger={((idx % 6) + 1) as 1 | 2 | 3 | 4 | 5 | 6} class="relative grid grid-cols-1 gap-6 border-l-2 border-divider pl-8 md:grid-cols-[10rem_1fr] md:gap-12">
-              <span
-                aria-hidden="true"
-                class="absolute -left-[7px] top-1.5 inline-block h-3 w-3 rounded-full bg-accent"
-              />
-              <div>
-                <p class="display-heading text-xl text-ink">{item.period}</p>
-                <p class="mt-1 text-sm text-ink/70">{item.location}</p>
-                <p class="mt-4 eyebrow text-ink">No. {String(experience.length - idx).padStart(2, "0")}</p>
-              </div>
-              <div>
-                <h3 class="hero-name-lg text-ink">{item.role}</h3>
-                <p class="mt-2 text-lg text-ink/90 font-semibold">{item.org}</p>
-                <ul class="mt-6 max-w-prose-wide space-y-2.5 text-base text-ink/95 font-medium">
-                  {item.bullets.map((b) => (
-                    <li class="leading-relaxed before:mr-2 before:text-accent before:content-['—']">{b}</li>
-                  ))}
-                </ul>
-              </div>
-          </Reveal>
-        ))
-      }
-    </ol>
-
-    <Reveal stagger={1} class="mt-20 max-w-prose-wide">
-      <p class="text-base text-ink/90 leading-relaxed font-medium">
-        References available on request. See
-        <a
-          href="https://linkedin.com/in/milind-dalakoti"
-          rel="noopener noreferrer"
-          class="link-accent">LinkedIn</a
-        > for endorsements.
-      </p>
-    </Reveal>
-  </section>
 
   <Reveal stagger={1}>
     <Divider class="my-section-tight" />
   </Reveal>
 
-  <!-- 06 · EDUCATION -->
+  <!-- 05 · EDUCATION -->
   <section id="education" class="container-page section-block-snug relative">
     <Reveal stagger={1}>
       <p class="eyebrow">Academic background</p>
@@ -446,6 +439,16 @@ const base = import.meta.env.BASE_URL || "";
                   {item.bullets.map((b) => (
                     <li class="leading-relaxed before:mr-2 before:text-accent before:content-['—']">{b}</li>
                   ))}
+                  {item.coursework && (
+                    <li class="leading-relaxed">
+                      <span class="font-medium">Coursework:</span>
+                      <ul class="mt-2 space-y-1">
+                        {item.coursework.map((c) => (
+                          <li class="before:mr-2 before:text-accent before:content-['—']">{c}</li>
+                        ))}
+                      </ul>
+                    </li>
+                  )}
                 </ul>
               </div>
           </Reveal>
@@ -455,15 +458,38 @@ const base = import.meta.env.BASE_URL || "";
 
     <Reveal stagger={1} class="mt-20 max-w-prose-wide">
       <p class="text-base text-ink/90 leading-relaxed font-medium">
-        Dissertation and coursework available on request. See
+        Dissertation code available on request. See
         <a
-          href="https://linkedin.com/in/milind-dalakoti"
+          href="https://github.com/milinddalakoti"
           rel="noopener noreferrer"
-          class="link-accent">LinkedIn</a
+          class="link-accent">GitHub</a
         > for endorsements.
       </p>
     </Reveal>
   </section>
+
+
+  <Reveal stagger={1}>
+    <Divider class="my-section-tight" />
+  </Reveal>
+
+  <!-- 06 · PROJECTS -->
+  <section id="projects" class="container-page section-block-snug relative">
+    <Reveal stagger={1}>
+      <p class="eyebrow">Projects</p>
+      <h2 class="hero-name-lg mt-3 text-ink">Selected work.</h2>
+    </Reveal>
+    <Reveal stagger={2} class="mt-6 max-w-prose-wide text-body-lg text-ink/90">
+      <p>
+        Selected work from my M.Sc. and JP Morgan/Wiley production support —
+        uplifted into reproducible, well-tested artefacts.
+      </p>
+    </Reveal>
+    <Reveal stagger={3} class="mt-12 md:-mx-[calc((100vw-100%)/2)]">
+      <ProjectMarquee projects={projects} />
+    </Reveal>
+  </section>
+
 
   <Reveal stagger={1}>
     <Divider class="my-section-tight" />
@@ -500,7 +526,6 @@ const base = import.meta.env.BASE_URL || "";
       }
     </ul>
   </section>
-
 
   <Reveal stagger={1}>
     <Watermark text="Milind Dalakoti" class="mt-section" />
