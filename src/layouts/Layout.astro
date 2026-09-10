@@ -170,6 +170,7 @@ const canonicalUrl = url;
           }
         }
         function updateHash() {
+          if (window.__dockNavActive) return; // Skip during dock-triggered scroll
           if (sections.length === 0) return;
           var viewportHeight = window.innerHeight;
           var best = null;

@@ -129,17 +129,23 @@ const items = [
       var el = document.getElementById(m[1]);
       if (!el) return;
       e.preventDefault();
-      // Direct scrollTop — bypasses CSS scroll-behavior: smooth which causes
-      // race conditions with Layout's updateHash scroll listener
+      // Block Layout's updateHash from overriding the hash during
+      // programmatic scroll. Set guard, scroll, then clear after scroll.
+      window.__dockNavActive = m[1];
       var navHeight = parseInt(
         getComputedStyle(document.documentElement)
           .getPropertyValue("--nav-height") || "96", 10) || 96;
       var absTop = el.getBoundingClientRect().top + window.pageYOffset;
       var offset = Math.max(0, absTop - navHeight - 8);
-      document.documentElement.scrollTop = offset;
-      // Native hash navigation — triggers hashchange + Layout's scrollToHash
-      window.location.hash = m[1];
-      setTimeout(update, 100);
+      window.scrollTo({ top: offset, behavior: "smooth" });
+      // Set hash — triggers Layout's scrollToHash for redundant scroll
+      history.replaceState(null, "", "#" + m[1]);
+      window.dispatchEvent(new Event("hashchange"));
+      // Update active state after scroll settles, then release guard
+      setTimeout(function () {
+        update();
+        window.__dockNavActive = null;
+      }, 800);
     }
     document.removeEventListener("click", dockClick);
     document.addEventListener("click", dockClick);
