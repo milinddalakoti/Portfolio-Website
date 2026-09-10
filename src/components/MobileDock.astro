@@ -124,7 +124,9 @@ const items = [
     // document.documentElement.scrollTop is synchronous and NOT affected
     // by CSS scroll-behavior: smooth, unlike scrollTo()/scrollIntoView().
     function dockClick(e) {
-      console.log('dockClick fired:', e.target.textContent?.trim().substring(0,20), 'defaultPrevented:', e.defaultPrevented);
+      (window.__dockDebug = window.__dockDebug || []).push({
+        phase: 'fired', target: e.target.textContent?.trim()?.substring(0,20), defaultPrevented: e.defaultPrevented
+      });
       var a = e.target.closest("[data-dock-link]");
       if (!a) return;
       var h = a.getAttribute("href") || "";
@@ -132,25 +134,33 @@ const items = [
       if (!m) return;
       var el = document.getElementById(m[1]);
       if (!el) return;
-      console.log('dockClick matched:', m[1], 'el found:', !!el);
+      (window.__dockDebug = window.__dockDebug || []).push({
+        phase: 'matched', id: m[1], elFound: !!el, href: h
+      });
       e.preventDefault();
       var navHeight = parseInt(
         getComputedStyle(document.documentElement)
           .getPropertyValue("--nav-height") || "96", 10) || 96;
       var absTop = el.getBoundingClientRect().top + window.pageYOffset;
       var offset = Math.max(0, absTop - navHeight - 8);
-      console.log('dockClick offset:', offset, 'navHeight:', navHeight);
+      (window.__dockDebug = window.__dockDebug || []).push({
+        phase: 'beforeScroll', offset: offset, navHeight: navHeight, absTop: absTop, pageYOffset: window.pageYOffset
+      });
       window.__dockNavActive = m[1];
       document.documentElement.scrollTop = offset;
-      console.log('dockClick after scrollTop, scrollY:', window.pageYOffset);
+      (window.__dockDebug = window.__dockDebug || []).push({
+        phase: 'afterScroll', scrollY: window.pageYOffset
+      });
       history.replaceState(null, "", "#" + m[1]);
-      console.log('dockClick after replaceState, hash:', window.location.hash);
+      (window.__dockDebug = window.__dockDebug || []).push({
+        phase: 'afterReplaceState', hash: window.location.hash
+      });
       setTimeout(function () {
         update();
         window.__dockNavActive = null;
       }, 100);
     }
-    console.log('dockClick listener added with capture:', true);
+    (window.__dockDebug = window.__dockDebug || []).push({ phase: 'listenerAdded', capture: true });
     document.removeEventListener("click", dockClick, true);
     document.addEventListener("click", dockClick, true);
   })();
