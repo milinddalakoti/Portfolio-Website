@@ -117,6 +117,7 @@ const items = [
     document.addEventListener("scroll", onScroll, { passive: true });
     document.addEventListener("astro:page-load", function () { update(); });
     update();
+
     // Document-level event delegation for dock link clicks.
     // Delegates to document so handlers survive Astro view transitions.
     function dockClick(e) {
@@ -128,7 +129,16 @@ const items = [
       var el = document.getElementById(m[1]);
       if (!el) return;
       e.preventDefault();
-      window.location.hash = m[1];
+      // Scroll directly — scrollIntoView is unreliable with overflow-x: clip
+      var navHeight = parseInt(
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--nav-height") || "96", 10) || 96;
+      var absTop = el.getBoundingClientRect().top + window.pageYOffset;
+      var offset = Math.max(0, absTop - navHeight - 8);
+      window.scrollTo({ top: offset, behavior: "auto" });
+      // Force hash change regardless of current value
+      history.replaceState(null, "", "#" + m[1]);
+      window.dispatchEvent(new Event("hashchange"));
       setTimeout(update, 100);
     }
     document.removeEventListener("click", dockClick);
