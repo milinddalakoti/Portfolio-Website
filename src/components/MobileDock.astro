@@ -118,9 +118,9 @@ const items = [
     document.addEventListener("astro:page-load", function () { update(); });
     update();
 
-    // Document-level click handler for dock links.
-    // We use preventDefault (not stopImmediatePropagation) to block Astro
-    // ClientRouter's navigate() without preventing scrollTo from working.
+    // Capture-phase listener — fires BEFORE Astro's ClientRouter (bubble phase,
+    // added in <head>). preventDefault sets defaultPrevented=true so Astro's
+    // handler sees it and returns early (no navigate()).
     // document.documentElement.scrollTop is synchronous and NOT affected
     // by CSS scroll-behavior: smooth, unlike scrollTo()/scrollIntoView().
     function dockClick(e) {
@@ -149,7 +149,7 @@ const items = [
         window.__dockNavActive = null;
       }, 100);
     }
-    document.removeEventListener("click", dockClick);
-    document.addEventListener("click", dockClick);
+    document.removeEventListener("click", dockClick, true);
+    document.addEventListener("click", dockClick, true);
   })();
   </script>
