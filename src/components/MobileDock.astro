@@ -20,17 +20,19 @@
  *   - Active pill is filled ink; inactive pills are subtle
  *   - No motion on the pills themselves (only the active state swap)
  */
+const base = import.meta.env.BASE_URL || "";
 
 const items = [
-  { href: "/#home",       label: "Home"  },
-  { href: "/#now",        label: "Now"   },
-  { href: "/#experience", label: "Time"  },
-  { href: "/#skills",     label: "Skills"},
-  { href: "/#education",  label: "Edu."  },
-  { href: "/#projects",   label: "Work"  },
-  { href: "/#contact",    label: "Talk"  },
+  { href: base + "/#home",       label: "Home"  },
+  { href: base + "/#now",        label: "Now"   },
+  { href: base + "/#experience", label: "Time"  },
+  { href: base + "/#skills",     label: "Skills"},
+  { href: base + "/#education",  label: "Edu."  },
+  { href: base + "/#projects",   label: "Work"  },
+  { href: base + "/#contact",    label: "Talk"  },
 ];
 ---
+
 
 <nav class="mobile-dock md:hidden" aria-label="Section navigation" data-mobile-dock>
   <ul class="w-full flex items-center justify-between gap-1 overflow-x-auto px-2 py-2">
