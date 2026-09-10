@@ -129,23 +129,24 @@ const items = [
       var el = document.getElementById(m[1]);
       if (!el) return;
       e.preventDefault();
-      // Block Layout's updateHash from overriding the hash during
-      // programmatic scroll. Set guard, scroll, then clear after scroll.
+      // Scroll must be deferred — headless Chrome doesn't apply scrollTo
+      // synchronously inside event handlers. Set guard first.
       window.__dockNavActive = m[1];
       var navHeight = parseInt(
         getComputedStyle(document.documentElement)
           .getPropertyValue("--nav-height") || "96", 10) || 96;
       var absTop = el.getBoundingClientRect().top + window.pageYOffset;
       var offset = Math.max(0, absTop - navHeight - 8);
-      window.scrollTo({ top: offset, behavior: "auto" });
-      // Set hash — triggers Layout's scrollToHash for redundant scroll
-      history.replaceState(null, "", "#" + m[1]);
-      window.dispatchEvent(new Event("hashchange"));
-      // Update active state, then release guard
+      var targetHash = "#" + m[1];
       setTimeout(function () {
-        update();
-        window.__dockNavActive = null;
-      }, 300);
+        window.scrollTo({ top: offset, behavior: "auto" });
+        history.replaceState(null, "", targetHash);
+        window.dispatchEvent(new Event("hashchange"));
+        setTimeout(function () {
+          update();
+          window.__dockNavActive = null;
+        }, 500);
+      }, 0);
     }
     document.removeEventListener("click", dockClick);
     document.addEventListener("click", dockClick);
