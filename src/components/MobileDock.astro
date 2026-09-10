@@ -118,15 +118,12 @@ const items = [
     document.addEventListener("astro:page-load", function () { update(); });
     update();
 
-    // Capture-phase listener — fires BEFORE Astro's ClientRouter (bubble phase,
-    // added in <head>). preventDefault sets defaultPrevented=true so Astro's
-    // handler sees it and returns early (no navigate()).
-    // document.documentElement.scrollTop is synchronous and NOT affected
-    // by CSS scroll-behavior: smooth, unlike scrollTo()/scrollIntoView().
+    // Capture-phase listener. preventDefault blocks Astro's ClientRouter
+    // (bubble phase) by setting defaultPrevented=true before Astro's handler runs.
+    // document.documentElement.scrollTop is synchronous and NOT affected by
+    // CSS scroll-behavior: smooth. Must be in setTimeout(0) to work outside
+    // the click event handler context in headless Chrome.
     function dockClick(e) {
-      (window.__dockDebug = window.__dockDebug || []).push({
-        phase: 'fired', target: e.target.textContent?.trim()?.substring(0,20), defaultPrevented: e.defaultPrevented
-      });
       var a = e.target.closest("[data-dock-link]");
       if (!a) return;
       var h = a.getAttribute("href") || "";
@@ -134,33 +131,25 @@ const items = [
       if (!m) return;
       var el = document.getElementById(m[1]);
       if (!el) return;
-      (window.__dockDebug = window.__dockDebug || []).push({
-        phase: 'matched', id: m[1], elFound: !!el, href: h
-      });
       e.preventDefault();
       var navHeight = parseInt(
         getComputedStyle(document.documentElement)
           .getPropertyValue("--nav-height") || "96", 10) || 96;
       var absTop = el.getBoundingClientRect().top + window.pageYOffset;
       var offset = Math.max(0, absTop - navHeight - 8);
-      (window.__dockDebug = window.__dockDebug || []).push({
-        phase: 'beforeScroll', offset: offset, navHeight: navHeight, absTop: absTop, pageYOffset: window.pageYOffset
-      });
+      // Block Layout's updateHash during scroll
       window.__dockNavActive = m[1];
-      document.documentElement.scrollTop = offset;
-      (window.__dockDebug = window.__dockDebug || []).push({
-        phase: 'afterScroll', scrollY: window.pageYOffset
-      });
-      history.replaceState(null, "", "#" + m[1]);
-      (window.__dockDebug = window.__dockDebug || []).push({
-        phase: 'afterReplaceState', hash: window.location.hash
-      });
+      // Defer all side effects outside the click event handler
       setTimeout(function () {
-        update();
-        window.__dockNavActive = null;
-      }, 100);
+        document.documentElement.scrollTop = offset;
+        history.replaceState(null, "", "#" + m[1]);
+        // Update active state, then release guard
+        setTimeout(function () {
+          update();
+          window.__dockNavActive = null;
+        }, 50);
+      }, 0);
     }
-    (window.__dockDebug = window.__dockDebug || []).push({ phase: 'listenerAdded', capture: true });
     document.removeEventListener("click", dockClick, true);
     document.addEventListener("click", dockClick, true);
   })();
