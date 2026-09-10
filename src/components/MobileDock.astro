@@ -124,6 +124,7 @@ const items = [
     // document.documentElement.scrollTop is synchronous and NOT affected
     // by CSS scroll-behavior: smooth, unlike scrollTo()/scrollIntoView().
     function dockClick(e) {
+      console.log('dockClick fired:', e.target.textContent?.trim().substring(0,20), 'defaultPrevented:', e.defaultPrevented);
       var a = e.target.closest("[data-dock-link]");
       if (!a) return;
       var h = a.getAttribute("href") || "";
@@ -131,24 +132,25 @@ const items = [
       if (!m) return;
       var el = document.getElementById(m[1]);
       if (!el) return;
+      console.log('dockClick matched:', m[1], 'el found:', !!el);
       e.preventDefault();
       var navHeight = parseInt(
         getComputedStyle(document.documentElement)
           .getPropertyValue("--nav-height") || "96", 10) || 96;
       var absTop = el.getBoundingClientRect().top + window.pageYOffset;
       var offset = Math.max(0, absTop - navHeight - 8);
-      // Block Layout's updateHash from overriding the hash during scroll
+      console.log('dockClick offset:', offset, 'navHeight:', navHeight);
       window.__dockNavActive = m[1];
-      // Instant scroll via scrollTop (bypasses CSS scroll-behavior: smooth)
       document.documentElement.scrollTop = offset;
-      // Set hash via replaceState (no native scroll, no hashchange race)
+      console.log('dockClick after scrollTop, scrollY:', window.pageYOffset);
       history.replaceState(null, "", "#" + m[1]);
-      // Update active state, then release guard
+      console.log('dockClick after replaceState, hash:', window.location.hash);
       setTimeout(function () {
         update();
         window.__dockNavActive = null;
       }, 100);
     }
+    console.log('dockClick listener added with capture:', true);
     document.removeEventListener("click", dockClick, true);
     document.addEventListener("click", dockClick, true);
   })();
