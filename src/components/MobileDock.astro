@@ -118,8 +118,10 @@ const items = [
     document.addEventListener("astro:page-load", function () { update(); });
     update();
 
-    // Document-level event delegation for dock link clicks.
-    // Delegates to document so handlers survive Astro view transitions.
+    // Capture-phase document listener — fires BEFORE Astro's ClientRouter
+    // (which is added in <head>). stopImmediatePropagation prevents
+    // ClientRouter from calling navigate() which would trigger
+    // astro:page-load and updateHash, resetting the hash mid-scroll.
     function dockClick(e) {
       var a = e.target.closest("[data-dock-link]");
       if (!a) return;
@@ -129,8 +131,7 @@ const items = [
       var el = document.getElementById(m[1]);
       if (!el) return;
       e.preventDefault();
-      // Scroll must be deferred — headless Chrome doesn't apply scrollTo
-      // synchronously inside event handlers. Set guard first.
+      e.stopImmediatePropagation();
       window.__dockNavActive = m[1];
       var navHeight = parseInt(
         getComputedStyle(document.documentElement)
@@ -138,6 +139,8 @@ const items = [
       var absTop = el.getBoundingClientRect().top + window.pageYOffset;
       var offset = Math.max(0, absTop - navHeight - 8);
       var targetHash = "#" + m[1];
+      // Defer scroll — headless Chrome doesn't apply scrollTo
+      // synchronously inside event handlers.
       setTimeout(function () {
         window.scrollTo({ top: offset, behavior: "auto" });
         history.replaceState(null, "", targetHash);
@@ -149,6 +152,6 @@ const items = [
       }, 0);
     }
     document.removeEventListener("click", dockClick);
-    document.addEventListener("click", dockClick);
+    document.addEventListener("click", dockClick, true);
   })();
   </script>
