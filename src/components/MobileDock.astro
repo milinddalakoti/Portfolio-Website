@@ -131,16 +131,14 @@ const items = [
       var el = document.getElementById(id);
       if (!el) return;
       e.preventDefault();
-      var navHeight = parseInt(
-        getComputedStyle(document.documentElement)
-          .getPropertyValue("--nav-height") || "96", 10) || 96;
-      var top = el.getBoundingClientRect().top + window.pageYOffset;
-      var offset = Math.max(0, top - navHeight - 8);
-      // Scroll first - don't touch history API (Astro ClientRouter may intercept)
-      window.scrollTo({ top: offset, behavior: "smooth" });
-      // Then update the hash without triggering a navigation
+      // Use scrollIntoView which respects scroll-margin-top CSS
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Update hash + active state after scroll settles
       setTimeout(function () {
-        window.location.hash = id;
+        var hash = "#" + id;
+        if (window.location.hash !== hash) {
+          history.replaceState(null, "", window.location.pathname + hash);
+        }
         update();
       }, 800);
     }
