@@ -124,7 +124,7 @@ const canonicalUrl = url;
                 .getPropertyValue("--nav-height") || "96", 10) || 96;
             var top = el.getBoundingClientRect().top + window.pageYOffset;
             var offset = Math.max(0, top - navHeight - 8);
-            window.scrollTo({ top: offset, behavior: "auto" });
+            document.documentElement.scrollTop = offset;
           }
         }
         window.addEventListener("hashchange", function () {
