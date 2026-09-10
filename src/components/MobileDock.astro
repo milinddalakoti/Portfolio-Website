@@ -136,12 +136,13 @@ const items = [
           .getPropertyValue("--nav-height") || "96", 10) || 96;
       var top = el.getBoundingClientRect().top + window.pageYOffset;
       var offset = Math.max(0, top - navHeight - 8);
-      // Use replaceState (not pushState) to avoid triggering Astro ClientRouter
-      var base = window.location.pathname.replace(/\/+$/, "") || "/";
-      history.replaceState(null, "", base + "#" + id);
+      // Scroll first - don't touch history API (Astro ClientRouter may intercept)
       window.scrollTo({ top: offset, behavior: "smooth" });
-      // Update active state after scroll settles
-      setTimeout(update, 500);
+      // Then update the hash without triggering a navigation
+      setTimeout(function () {
+        window.location.hash = id;
+        update();
+      }, 800);
     }
 
     function reattach() {
