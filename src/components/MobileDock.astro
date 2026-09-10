@@ -117,5 +117,31 @@ const items = [
     document.addEventListener("scroll", onScroll, { passive: true });
     document.addEventListener("astro:page-load", update);
     update();
+
+    // Handle clicks: Astro ClientRouter intercepts anchor clicks and uses
+    // pushState, which doesn't fire hashchange or trigger native scroll.
+    // We handle it manually so dock links scroll to sections.
+    for (var k = 0; k < links.length; k++) {
+      links[k].addEventListener("click", function (e) {
+        var h = e.currentTarget.getAttribute("href") || "";
+        var m = h.match(/#([^/?#]+)/);
+        if (!m) return;
+        var id = m[1];
+        var el = document.getElementById(id);
+        if (!el) return;
+        e.preventDefault();
+        var navHeight = parseInt(
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--nav-height") || "96", 10) || 96;
+        var top = el.getBoundingClientRect().top + window.pageYOffset;
+        var offset = Math.max(0, top - navHeight - 8);
+        // Update URL without full reload
+        var base = window.location.pathname.replace(/\/+$/, "") || "/";
+        history.pushState(null, "", base + "#" + id);
+        window.scrollTo({ top: offset, behavior: "smooth" });
+        // Update active state after scroll settles
+        requestAnimationFrame(function () { update(); });
+      });
+    }
   })();
 </script>
