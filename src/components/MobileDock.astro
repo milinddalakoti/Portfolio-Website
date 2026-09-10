@@ -119,37 +119,23 @@ const items = [
     update();
 
     // Capture-phase document listener — fires BEFORE Astro's ClientRouter
-    // (which is added in <head>). stopImmediatePropagation prevents
-    // ClientRouter from calling navigate() which would trigger
-    // astro:page-load and updateHash, resetting the hash mid-scroll.
+    // (added in <head>). stopImmediatePropagation blocks ClientRouter's
+    // navigate() call (which triggers astro:page-load → updateHash → hash reset).
+    // We do NOT call preventDefault — letting the browser's native anchor
+    // navigation handle the scroll+hash, which is more reliable than
+    // programmatic scrollTo inside event handlers.
     function dockClick(e) {
       var a = e.target.closest("[data-dock-link]");
       if (!a) return;
       var h = a.getAttribute("href") || "";
       var m = h.match(/#([^/?#]+)/);
       if (!m) return;
-      var el = document.getElementById(m[1]);
-      if (!el) return;
-      e.preventDefault();
       e.stopImmediatePropagation();
+      // Block Layout's updateHash from overriding the hash during scroll
       window.__dockNavActive = m[1];
-      var navHeight = parseInt(
-        getComputedStyle(document.documentElement)
-          .getPropertyValue("--nav-height") || "96", 10) || 96;
-      var absTop = el.getBoundingClientRect().top + window.pageYOffset;
-      var offset = Math.max(0, absTop - navHeight - 8);
-      var targetHash = "#" + m[1];
-      // Defer scroll — headless Chrome doesn't apply scrollTo
-      // synchronously inside event handlers.
       setTimeout(function () {
-        window.scrollTo({ top: offset, behavior: "auto" });
-        history.replaceState(null, "", targetHash);
-        window.dispatchEvent(new Event("hashchange"));
-        setTimeout(function () {
-          update();
-          window.__dockNavActive = null;
-        }, 500);
-      }, 0);
+        window.__dockNavActive = null;
+      }, 1000);
     }
     document.removeEventListener("click", dockClick);
     document.addEventListener("click", dockClick, true);
