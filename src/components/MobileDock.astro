@@ -141,10 +141,22 @@ const items = [
       window.__dockNavActive = m[1];
       // Defer all side effects outside the click event handler
       setTimeout(function () {
+        (window.__dockDebug = window.__dockDebug || []).push({
+          phase: 'inSetTimeout0', offset: offset, scrollYBefore: window.pageYOffset
+        });
         document.documentElement.scrollTop = offset;
+        (window.__dockDebug = window.__dockDebug || []).push({
+          phase: 'afterSetTimeoutScrollTop', scrollY: window.pageYOffset, offsetSet: offset
+        });
         history.replaceState(null, "", "#" + m[1]);
+        (window.__dockDebug = window.__dockDebug || []).push({
+          phase: 'afterReplaceState', hash: window.location.hash, scrollY: window.pageYOffset
+        });
         // Update active state, then release guard
         setTimeout(function () {
+          (window.__dockDebug = window.__dockDebug || []).push({
+            phase: 'inInnerTimeout', scrollY: window.pageYOffset, hash: window.location.hash, dockActive: window.__dockNavActive
+          });
           update();
           window.__dockNavActive = null;
         }, 50);
