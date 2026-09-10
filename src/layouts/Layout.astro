@@ -111,6 +111,31 @@ const canonicalUrl = url;
         window.addEventListener("resize", updateNavHeight);
         document.addEventListener("astro:page-load", updateNavHeight);
       })();
+      // Scroll to section when URL hash changes (clicks on Nav / MobileDock links).
+      (function () {
+        if (window.__hashScrollSynced) return;
+        window.__hashScrollSynced = true;
+        function scrollToHash(hash) {
+          var id = (hash || "").substring(1) || "home";
+          var el = document.getElementById(id);
+          if (el) {
+            var navHeight = parseInt(
+              getComputedStyle(document.documentElement)
+                .getPropertyValue("--nav-height") || "96", 10) || 96;
+            var top = el.getBoundingClientRect().top + window.pageYOffset;
+            var offset = Math.max(0, top - navHeight - 8);
+            window.scrollTo({ top: offset, behavior: "smooth" });
+          }
+        }
+        window.addEventListener("hashchange", function () {
+          scrollToHash(window.location.hash);
+        });
+        // If the page loads with a hash, scroll to it.
+        document.addEventListener("astro:page-load", function () {
+          scrollToHash(window.location.hash);
+        });
+        if (window.location.hash) scrollToHash(window.location.hash);
+      })();
     </script>
     <style is:inline>
       @media (min-width: 768px) {
