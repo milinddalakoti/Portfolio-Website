@@ -129,6 +129,7 @@ const items = [
         var el = document.getElementById(m[1]);
         if (!el) return;
         e.preventDefault();
+        e.stopImmediatePropagation();
         el.scrollIntoView({ block: "start" });
         window.location.hash = m[1];
         setTimeout(update, 100);
