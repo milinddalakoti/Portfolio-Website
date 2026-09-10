@@ -118,22 +118,25 @@ const items = [
     document.addEventListener("astro:page-load", function () { update(); });
     update();
 
-    // Handle dock link clicks via inline handlers on each link.
-    // Astro's ClientRouter may intercept document-level clicks, so we
-    // attach directly to each <a> element for reliability.
-    links.forEach(function (link) {
-      link.onclick = function (e) {
-        var h = link.getAttribute("href") || "";
-        var m = h.match(/#([^/?#]+)/);
-        if (!m) return;
-        var el = document.getElementById(m[1]);
-        if (!el) return;
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        el.scrollIntoView({ block: "start" });
-        window.location.hash = m[1];
-        setTimeout(update, 100);
-      };
-    });
+    // Document-level event delegation for dock link clicks.
+    // Delegates to document so handlers survive Astro view transitions.
+    // stopImmediatePropagation blocks Astro's ClientRouter from
+    // intercepting same-page hash clicks.
+    function dockClick(e) {
+      var a = e.target.closest("[data-dock-link]");
+      if (!a) return;
+      var h = a.getAttribute("href") || "";
+      var m = h.match(/#([^/?#]+)/);
+      if (!m) return;
+      var el = document.getElementById(m[1]);
+      if (!el) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      el.scrollIntoView({ block: "start" });
+      window.location.hash = m[1];
+      setTimeout(update, 100);
+    }
+    document.removeEventListener("click", dockClick);
+    document.addEventListener("click", dockClick);
   })();
   </script>
