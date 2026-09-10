@@ -128,6 +128,7 @@ const canonicalUrl = url;
           }
         }
         window.addEventListener("hashchange", function () {
+          if (window.__hashFromScroll) return;
           scrollToHash(window.location.hash);
         });
         // If the page loads with a hash, scroll to it.
@@ -184,8 +185,10 @@ const canonicalUrl = url;
           if (best && bestScore < viewportHeight) {
             var hash = "#" + best;
             if (window.location.hash !== hash) {
+              window.__hashFromScroll = true;
               history.replaceState(null, "", hash);
               window.dispatchEvent(new Event("hashchange"));
+              window.__hashFromScroll = false;
             }
           }
           var rail = document.querySelector("[data-folio-rail]");
