@@ -118,26 +118,38 @@ const items = [
     document.addEventListener("astro:page-load", function () { update(); });
     update();
 
-    // Capture-phase document listener — fires BEFORE Astro's ClientRouter
-    // (added in <head>). stopImmediatePropagation blocks ClientRouter's
-    // navigate() call (which triggers astro:page-load → updateHash → hash reset).
-    // We do NOT call preventDefault — letting the browser's native anchor
-    // navigation handle the scroll+hash, which is more reliable than
-    // programmatic scrollTo inside event handlers.
+    // Document-level click handler for dock links.
+    // We use preventDefault (not stopImmediatePropagation) to block Astro
+    // ClientRouter's navigate() without preventing scrollTo from working.
+    // document.documentElement.scrollTop is synchronous and NOT affected
+    // by CSS scroll-behavior: smooth, unlike scrollTo()/scrollIntoView().
     function dockClick(e) {
       var a = e.target.closest("[data-dock-link]");
       if (!a) return;
       var h = a.getAttribute("href") || "";
       var m = h.match(/#([^/?#]+)/);
       if (!m) return;
-      e.stopImmediatePropagation();
+      var el = document.getElementById(m[1]);
+      if (!el) return;
+      e.preventDefault();
+      var navHeight = parseInt(
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--nav-height") || "96", 10) || 96;
+      var absTop = el.getBoundingClientRect().top + window.pageYOffset;
+      var offset = Math.max(0, absTop - navHeight - 8);
       // Block Layout's updateHash from overriding the hash during scroll
       window.__dockNavActive = m[1];
+      // Instant scroll via scrollTop (bypasses CSS scroll-behavior: smooth)
+      document.documentElement.scrollTop = offset;
+      // Set hash via replaceState (no native scroll, no hashchange race)
+      history.replaceState(null, "", "#" + m[1]);
+      // Update active state, then release guard
       setTimeout(function () {
+        update();
         window.__dockNavActive = null;
-      }, 1000);
+      }, 100);
     }
     document.removeEventListener("click", dockClick);
-    document.addEventListener("click", dockClick, true);
+    document.addEventListener("click", dockClick);
   })();
   </script>
