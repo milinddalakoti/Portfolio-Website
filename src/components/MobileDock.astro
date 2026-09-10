@@ -132,15 +132,13 @@ const items = [
       if (!el) return;
       e.preventDefault();
       // Use scrollIntoView which respects scroll-margin-top CSS
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-      // Update hash + active state after scroll settles
-      setTimeout(function () {
-        var hash = "#" + id;
-        if (window.location.hash !== hash) {
-          history.replaceState(null, "", window.location.pathname + hash);
-        }
-        update();
-      }, 800);
+      el.scrollIntoView({ behavior: "auto", block: "start" });
+      // Update hash + active state immediately
+      var hash = "#" + id;
+      if (window.location.hash !== hash) {
+        history.replaceState(null, "", window.location.pathname + hash);
+      }
+      update();
     }
 
     function reattach() {
