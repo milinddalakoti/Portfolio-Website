@@ -24,10 +24,10 @@
 const items = [
   { href: "/#home",       label: "Home"  },
   { href: "/#now",        label: "Now"   },
-  { href: "/#projects",   label: "Work"  },
-  { href: "/#skills",     label: "Skills"},
   { href: "/#experience", label: "Time"  },
-  { href: "/#education", label: "Edu."  },
+  { href: "/#skills",     label: "Skills"},
+  { href: "/#education",  label: "Edu."  },
+  { href: "/#projects",   label: "Work"  },
   { href: "/#contact",    label: "Talk"  },
 ];
 ---
@@ -87,7 +87,7 @@ const items = [
       var m = h.match(/#([^/?#]+)/);
       if (m) hashByHref[h] = m[1];
     }
-    var ids = ["home", "now", "projects", "skills", "experience", "education", "contact"];
+    var ids = ["home", "now", "experience", "skills", "education", "projects", "contact"];
 
     function update() {
       // The first section whose top is below the nav (~96px) wins.

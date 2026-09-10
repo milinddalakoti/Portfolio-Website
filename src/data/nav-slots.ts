@@ -22,9 +22,9 @@ export interface Slot {
 export const slots: Slot[] = [
   { n: 1, href: "/#home", label: "Home" },
   { n: 2, href: "/#now", label: "Now" },
-  { n: 3, href: "/#projects", label: "Projects", matchPrefixes: ["/projects/"] },
+  { n: 3, href: "/#experience", label: "Experience", matchPrefixes: ["/experience/"] },
   { n: 4, href: "/#skills", label: "Skills", matchPrefixes: ["/skills/"] },
-  { n: 5, href: "/#experience", label: "Experience", matchPrefixes: ["/experience/"] },
-  { n: 6, href: "/#education", label: "Education", matchPrefixes: ["/education/"] },
+  { n: 5, href: "/#education", label: "Education", matchPrefixes: ["/education/"] },
+  { n: 6, href: "/#projects", label: "Projects", matchPrefixes: ["/projects/"] },
   { n: 7, href: "/#contact", label: "Contact" },
 ] as const;
