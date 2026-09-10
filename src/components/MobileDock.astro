@@ -115,33 +115,41 @@ const items = [
       if (!ticking) { requestAnimationFrame(function () { update(); ticking = false; }); ticking = true; }
     }
     document.addEventListener("scroll", onScroll, { passive: true });
-    document.addEventListener("astro:page-load", update);
+    document.addEventListener("astro:page-load", function () { reattach(); update(); });
     update();
 
-    // Handle clicks: Astro ClientRouter intercepts anchor clicks and uses
-    // pushState, which doesn't fire hashchange or trigger native scroll.
-    // We handle it manually so dock links scroll to sections.
-    for (var k = 0; k < links.length; k++) {
-      links[k].addEventListener("click", function (e) {
-        var h = e.currentTarget.getAttribute("href") || "";
-        var m = h.match(/#([^/?#]+)/);
-        if (!m) return;
-        var id = m[1];
-        var el = document.getElementById(id);
-        if (!el) return;
-        e.preventDefault();
-        var navHeight = parseInt(
-          getComputedStyle(document.documentElement)
-            .getPropertyValue("--nav-height") || "96", 10) || 96;
-        var top = el.getBoundingClientRect().top + window.pageYOffset;
-        var offset = Math.max(0, top - navHeight - 8);
-        // Update URL without full reload
-        var base = window.location.pathname.replace(/\/+$/, "") || "/";
-        history.pushState(null, "", base + "#" + id);
-        window.scrollTo({ top: offset, behavior: "smooth" });
-        // Update active state after scroll settles
-        requestAnimationFrame(function () { update(); });
-      });
+    // Use event delegation on the nav so click handlers survive Astro view
+    // transitions (which replace the DOM). Delegate to the closest ancestor
+    // that's stable — the nav element itself.
+    function dockClick(e) {
+      var a = e.target.closest("[data-dock-link]");
+      if (!a) return;
+      var h = a.getAttribute("href") || "";
+      var m = h.match(/#([^/?#]+)/);
+      if (!m) return;
+      var id = m[1];
+      var el = document.getElementById(id);
+      if (!el) return;
+      e.preventDefault();
+      var navHeight = parseInt(
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--nav-height") || "96", 10) || 96;
+      var top = el.getBoundingClientRect().top + window.pageYOffset;
+      var offset = Math.max(0, top - navHeight - 8);
+      // Use replaceState (not pushState) to avoid triggering Astro ClientRouter
+      var base = window.location.pathname.replace(/\/+$/, "") || "/";
+      history.replaceState(null, "", base + "#" + id);
+      window.scrollTo({ top: offset, behavior: "smooth" });
+      // Update active state after scroll settles
+      setTimeout(update, 500);
     }
+
+    function reattach() {
+      var nav = document.querySelector("[data-mobile-dock]");
+      if (!nav) return;
+      nav.removeEventListener("click", dockClick);
+      nav.addEventListener("click", dockClick);
+    }
+    reattach();
   })();
-</script>
+  </script>
