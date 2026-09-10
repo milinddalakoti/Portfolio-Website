@@ -115,28 +115,24 @@ const items = [
       if (!ticking) { requestAnimationFrame(function () { update(); ticking = false; }); ticking = true; }
     }
     document.addEventListener("scroll", onScroll, { passive: true });
-    document.addEventListener("astro:page-load", function () { reattach(); update(); });
+    document.addEventListener("astro:page-load", function () { update(); });
     update();
 
-    // Handle dock link clicks via document-level event delegation.
-    // Astro's ClientRouter can replace the DOM during navigation, so we
-    // delegate to document (always survives) and guard against duplicate
-    // handlers with an idempotent toggle.
-    function dockClick(e) {
-      var a = e.target.closest("[data-dock-link]");
-      if (!a) return;
-      var h = a.getAttribute("href") || "";
-      var m = h.match(/#([^/?#]+)/);
-      if (!m) return;
-      var id = m[1];
-      var el = document.getElementById(id);
-      if (!el) return;
-      e.preventDefault();
-      el.scrollIntoView({ block: "start" });
-      window.location.hash = id;
-      setTimeout(update, 100);
-    }
-    document.removeEventListener("click", dockClick);
-    document.addEventListener("click", dockClick);
+    // Handle dock link clicks via inline handlers on each link.
+    // Astro's ClientRouter may intercept document-level clicks, so we
+    // attach directly to each <a> element for reliability.
+    links.forEach(function (link) {
+      link.onclick = function (e) {
+        var h = link.getAttribute("href") || "";
+        var m = h.match(/#([^/?#]+)/);
+        if (!m) return;
+        var el = document.getElementById(m[1]);
+        if (!el) return;
+        e.preventDefault();
+        el.scrollIntoView({ block: "start" });
+        window.location.hash = m[1];
+        setTimeout(update, 100);
+      };
+    });
   })();
   </script>
