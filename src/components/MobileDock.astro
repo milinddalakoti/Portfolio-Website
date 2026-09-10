@@ -129,16 +129,16 @@ const items = [
       var el = document.getElementById(m[1]);
       if (!el) return;
       e.preventDefault();
-      // Scroll directly — scrollIntoView is unreliable with overflow-x: clip
+      // Direct scrollTop — bypasses CSS scroll-behavior: smooth which causes
+      // race conditions with Layout's updateHash scroll listener
       var navHeight = parseInt(
         getComputedStyle(document.documentElement)
           .getPropertyValue("--nav-height") || "96", 10) || 96;
       var absTop = el.getBoundingClientRect().top + window.pageYOffset;
       var offset = Math.max(0, absTop - navHeight - 8);
-      window.scrollTo({ top: offset, behavior: "auto" });
-      // Force hash change regardless of current value
-      history.replaceState(null, "", "#" + m[1]);
-      window.dispatchEvent(new Event("hashchange"));
+      document.documentElement.scrollTop = offset;
+      // Native hash navigation — triggers hashchange + Layout's scrollToHash
+      window.location.hash = m[1];
       setTimeout(update, 100);
     }
     document.removeEventListener("click", dockClick);
