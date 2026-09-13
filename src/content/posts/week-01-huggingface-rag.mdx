@@ -1,22 +1,22 @@
 ---
 title: "Building a Mini-RAG Reader from scratch"
-summary: "Modular Retrieval-Augmented Generation pipeline (PDF → FAISS → open-weights LLM) with 14 passing unit tests. Notes on chunking, system-prompt engineering, and the Astro 7 + Tailwind 4 gotcha."
+summary: "End-to-end retrieval-augmented generation pipeline (PDF → FAISS → open-weights LLM) with 23 passing unit tests, graceful HF model fallback, and sentence-boundary-aware chunking."
 date: 2026-09-02
 tags: ["rag", "hugging-face", "faiss", "llm"]
 draft: false
 ---
 
 A reproducible, modular **Mini-RAG Reader** in
-[`milinddalakoti/ireland-visa-journey/projects/01-mini-rag-reader/`](https://github.com/milinddalakoti/ireland-visa-journey/tree/main/projects/01-mini-rag-reader):
+[milinddalakoti/Mini-Rag](https://github.com/milinddalakoti/Mini-Rag):
 
-1. **PDF ingestion** (`pdfplumber`) → per page records.
-2. **Sliding window chunking** (500 char windows, 50 char overlap) → `Chunk` objects with provenance.
+1. **PDF ingestion** (`pypdf` with `pdfplumber` fallback) → clean text extraction.
+2. **Sentence-boundary-aware chunking** (500 char windows, 50 char overlap) → `Chunk` objects with provenance.
 3. **Embedding** (`sentence-transformers/all-MiniLM-L6-v2`, 384 dim, L2 normalised).
 4. **FAISS `IndexFlatIP`** for cosine similarity retrieval.
-5. **Open weights LLM** (`Llama-3.2-3B-Instruct` via Hugging Face `transformers`) with a strict citation forcing system prompt.
-6. **FastAPI** wrapper with `/health`, `/load`, `/ask`.
+5. **Dual generator** — extractive (keyword + job-title pattern matching) or Hugging Face LLM, with silent fallback if the model can't load.
+6. **FastAPI** wrapper with `/health`, `/upload`, `/ask`.
 
-**14/15 tests green** (1 skipped is the model load test, opt in).
+**23/23 tests green.**
 
 ## What I learned
 

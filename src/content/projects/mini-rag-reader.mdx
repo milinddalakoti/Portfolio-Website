@@ -1,0 +1,55 @@
+---
+title: "Mini-RAG Reader"
+summary: "End-to-end retrieval-augmented generation pipeline — PDF/text upload, FAISS vector search, open-weights LLM answer generation with citations. 23 passing tests, graceful HF model fallback."
+date: 2026-09-13
+role: "Solo project"
+status: "shipped"
+stack:
+  - Python
+  - FastAPI
+  - FAISS
+  - sentence-transformers
+  - PyTorch
+  - Hugging Face Transformers
+githubUrl: "https://github.com/milinddalakoti/Mini-Rag"
+metrics:
+  - label: "Tests"
+    value: "23 passing"
+  - label: "Pipeline stages"
+    value: "4"
+  - label: "LLM model"
+    value: "Qwen/Qwen2.5-1.5B-Instruct"
+featured: true
+order: 5
+---
+
+## Problem
+
+Most RAG systems are brittle — they crash when the LLM fails to load, produce hallucinated answers, and require manual configuration for every environment. I wanted a system that just works: upload a document, ask a question, get an answer with citations — no matter what hardware or model access is available.
+
+## Approach
+
+1. **PDF ingestion** (`pypdf` with `pdfplumber` fallback) extracts clean text. `pdfplumber` was producing `(cid:127)` artifacts on designed PDFs, so `pypdf` became primary.
+2. **Sentence-boundary-aware chunking** — sliding window with snap-to-boundary so chunks never cut through sentences mid-way.
+3. **Embedding** (`sentence-transformers/all-MiniLM-L6-v2`, 384-dim, L2-normalized) indexed in FAISS `IndexFlatIP` for cosine similarity.
+4. **Dual generator** — `ExtractiveGenerator` (keyword + job-title pattern matching) works without any model download; `Generator` (Hugging Face `transformers`) provides richer answers when the model is available. Falls back silently if the HF model can't load.
+5. **Job-title pattern matching** — for employment documents, matches patterns like "Sales Associate – Zudio (Tata Group)" regardless of question wording, catching company names that keyword scoring alone misses.
+
+## Result
+
+- **Correct answers** on employment documents — `ExtractiveGenerator` correctly identifies `Zudio (Tata Group) & Lifestyle (Lifestyle Retail)` from a resume PDF when asked "Which 2 companies did the user work in?"
+- **Zero-dependency mode** works immediately with no GPU, no network, no model download
+- **Graceful fallback** — if the gated HF model can't load, the system silently switches to extractive mode and keeps working
+- **23/23 unit tests** covering config auto-detection, chunking, retrieval, generation, and the generator fallback
+
+## Why this matters
+
+A RAG system that works everywhere is more useful than one that only works when you have a GPU and a gated model. The extractive-first architecture means the pipeline is always functional, and the HF generation layer is an enhancement — not a requirement. The auto-detection of CUDA/MPS/CPU and `bfloat16`/`float32` torch dtype makes deployment trivial across machines.
+
+## Tech stack
+
+- **Python 3.11**, Pydantic config, PyYAML
+- **sentence-transformers** + **FAISS** for embedding and retrieval
+- **FastAPI** + **uvicorn** + **python-multipart** for the web server and REST API
+- **PyTorch** + **transformers** for HF LLM generation (optional)
+- **Makefile** + **setup.sh** + **Docker** for one-command setup and deployment
