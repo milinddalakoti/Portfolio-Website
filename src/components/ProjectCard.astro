@@ -24,7 +24,7 @@ const fmt = (d: Date) =>
 
 <a href={href} class="card group block h-full flex flex-col no-underline">
   <div class="flex items-start justify-between gap-4">
-    <div>
+    <div class="min-w-0 flex-1">
       <p class="eyebrow">{fmt(date)}</p>
       <h3
         class="display-heading mt-3 text-2xl font-bold tracking-tight text-ink transition-colors group-hover:text-accent sm:text-3xl"
@@ -47,19 +47,19 @@ const fmt = (d: Date) =>
     metrics.length > 0 && (
       <dl class="mt-7 grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-3">
         {metrics.map((m) => (
-          <div>
-            <dt class="eyebrow">{m.label}</dt>
-            <dd class="display-heading mt-2 text-xl text-ink">{m.value}</dd>
+          <div class="min-w-0">
+            <dt class="eyebrow text-[10px]">{m.label}</dt>
+            <dd class="display-heading mt-1 text-sm font-semibold text-ink break-words leading-tight">{m.value}</dd>
           </div>
         ))}
       </dl>
     )
   }
 
-  <ul class="mt-7 flex flex-wrap gap-1.5">
+  <ul class="mt-5 flex flex-wrap gap-1.5">
     {
       stack.slice(0, 6).map((s) => (
-        <li class="chip">{s}</li>
+        <li class="chip text-xs">{s}</li>
       ))
     }
   </ul>
