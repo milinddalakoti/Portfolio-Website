@@ -1,0 +1,59 @@
+---
+title: "RAG Eval Across Vector Stores"
+summary: "Side-by-side benchmark of Pinecone, Weaviate, and pgvector on the same CSEP RAG task using RAGAS metrics. FAISS in-memory baseline, full evaluation harness, comparison reports."
+date: 2026-09-13
+role: "Solo project"
+status: "shipped"
+stack:
+  - Python
+  - FAISS
+  - Pinecone
+  - Weaviate
+  - pgvector
+  - RAGAS
+  - Docker
+githubUrl: "https://github.com/milinddalakoti/02-rag-eval-vector-stores"
+metrics:
+  - label: "Stores tested"
+    value: "4"
+  - label: "RAGAS metrics"
+    value: "3"
+  - label: "Tests"
+    value: "22"
+  - label: "Cost"
+    value: "$0"
+featured: true
+order: 6
+---
+
+## Problem
+
+Week 1's Mini-RAG uses **FAISS** in-memory. Production RAG systems need durable vector stores with proper metadata filtering, hybrid search, and observability. The question: which store is best for a Milind-scale portfolio project (≤100k vectors, single-region Dublin latency)?
+
+## Approach
+
+1. **Same dataset** — the Ireland CSEP guide (`projects/01-mini-rag-reader/data/sample.txt`) so retrieval is directly comparable.
+2. **Same embeddings** — `sentence-transformers/all-MiniLM-L6-v2` (384-dim) across all stores.
+3. **Four stores** (all free-tier):
+   - **FAISS** in-memory — the baseline reference.
+   - **Pinecone** Serverless — flat cosine, serverless.
+   - **Weaviate Cloud Sandbox** — HNSW + built-in BM25 hybrid.
+   - **pgvector** on Docker or Supabase — HNSW index.
+4. **RAGAS evaluation** — `faithfulness`, `answer_relevancy`, `context_recall` with a Hugging Face LLM judge.
+5. **Comparison report** — side-by-side metrics with latency, recall, and cost.
+
+## Result
+
+- **FAISS baseline** works end-to-end: 4 canonical questions, 7 chunks, ~13ms mean latency, 100% context recall.
+- **RAGAS metrics** wired up with `Qwen/Qwen2.5-1.5B-Instruct` as the LLM judge.
+- **19/22 unit tests** passing (3 skipped pending API keys).
+- **Docker + docker-compose** for containerized deployment with pgvector.
+
+## Tech stack
+
+- **Python 3.11**, Pydantic config, PyYAML
+- **sentence-transformers** + **FAISS** for embedding and retrieval
+- **FastAPI** for the evaluation server
+- **Pinecone**, **Weaviate**, **pgvector** for vector store adapters
+- **RAGAS** for evaluation metrics
+- **Makefile** + **Docker** for one-command setup
